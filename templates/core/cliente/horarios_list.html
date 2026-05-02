@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Horários de Atendimento{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link" href="{% url 'cliente_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'servicos_list' %}">
+                    <i class="bi bi-scissors"></i> Serviços
+                </a>
+                <a class="nav-link" href="{% url 'profissionais_list' %}">
+                    <i class="bi bi-people"></i> Profissionais
+                </a>
+                <a class="nav-link active" href="{% url 'horarios_list' %}">
+                    <i class="bi bi-clock"></i> Horários
+                </a>
+                <a class="nav-link" href="{% url 'agendamentos_list' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-clock"></i> Horários de Atendimento</h2>
+                <a href="{% url 'horario_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Horário
+                </a>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Você pode criar horários gerais da barbearia ou horários específicos por barbeiro.
+            </div>
+
+            <form method="get" class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <select name="profissional" class="form-control">
+                        <option value="">Todos os horários</option>
+                        <option value="geral" {% if profissional_filtro == 'geral' %}selected{% endif %}>Somente horários gerais</option>
+                        {% for profissional in profissionais %}
+                            <option value="{{ profissional.id }}" {% if profissional_filtro == profissional.id|stringformat:"s" %}selected{% endif %}>
+                                {{ profissional.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-funnel"></i> Filtrar
+                    </button>
+                    <a href="{% url 'horarios_list' %}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Barbeiro</th>
+                                    <th>Dia da Semana</th>
+                                    <th>Horário</th>
+                                    <th>Intervalo</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for horario in horarios %}
+                                <tr>
+                                    <td>
+                                        {% if horario.profissional %}
+                                            {{ horario.profissional.nome }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Geral</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ horario.get_dia_semana_display }}</td>
+                                    <td>{{ horario.hora_inicio|time:"H:i" }} às {{ horario.hora_fim|time:"H:i" }}</td>
+                                    <td>{{ horario.intervalo_minutos }} min</td>
+                                    <td>
+                                        {% if horario.ativo %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'horario_edit' horario.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'horario_delete' horario.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nenhum horário cadastrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

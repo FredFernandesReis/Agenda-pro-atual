@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if agendamento %}Editar{% else %}Novo{% endif %} Agendamento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-event"></i> {% if agendamento %}Editar{% else %}Novo{% endif %} Agendamento
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Serviço</label>
+                                {{ form.servico }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Profissional</label>
+                                {{ form.profissional }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Data</label>
+                                {{ form.data }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Horário</label>
+                                {{ form.hora }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nome do Cliente</label>
+                            {{ form.cliente_nome }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefone</label>
+                                {{ form.cliente_telefone }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-mail</label>
+                                {{ form.cliente_email }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observações</label>
+                            {{ form.observacoes }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'agendamentos_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if horario %}Editar{% else %}Novo{% endif %} Horário{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-clock"></i> {% if horario %}Editar{% else %}Novo{% endif %} Horário de Atendimento
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Barbeiro</label>
+                            {{ form.profissional }}
+                            <small class="form-text text-muted">Deixe em branco para criar um horário geral da barbearia.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dia da Semana</label>
+                            {{ form.dia_semana }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora Início</label>
+                                {{ form.hora_inicio }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora Fim</label>
+                                {{ form.hora_fim }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Intervalo (minutos)</label>
+                                {{ form.intervalo_minutos }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.ativo }}
+                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                    Horário Ativo
+                                </label>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'horarios_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

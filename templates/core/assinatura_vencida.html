@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Assinatura Vencida - Agenda PRO{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 200px);">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="mb-3">Assinatura Vencida</h2>
+                    <p class="text-muted mb-4">
+                        Sua assinatura expirou ou está inativa. Entre em contato com o administrador 
+                        para renovar seu acesso ao sistema.
+                    </p>
+                    {% if user.empresa.assinatura.data_vencimento %}
+                    <p class="mb-4">
+                        <strong>Data de vencimento:</strong> 
+                        {{ user.empresa.assinatura.data_vencimento|date:"d/m/Y" }}
+                    </p>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agenda PRO{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- CSS Customizado - Carregado em ordem -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="bi bi-calendar-check"></i> Agenda PRO
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                </span>
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if user.is_authenticated %}
+    <!-- Sistema de Anúncios -->
+    <div id="anuncios-container" class="container mt-3"></div>
+    {% endif %}
+    
+    {% block content %}{% endblock %}
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript Customizado -->
+    {% load static %}
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% if user.is_authenticated %}
+    <!-- Script de Anúncios -->
+    <script>
+    // Carregar anúncios ativos
+    fetch('{% url "api_anuncios" %}')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('anuncios-container');
+            if (data.anuncios && data.anuncios.length > 0) {
+                data.anuncios.forEach(anuncio => {
+                    // Verificar se já foi fechado (localStorage)
+                    const anuncioKey = 'anuncio_fechado_' + anuncio.id;
+                    if (localStorage.getItem(anuncioKey)) {
+                        return; // Pular se já foi fechado
+                    }
+                    
+                    // Criar elemento do anúncio
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `alert alert-${anuncio.tipo} alert-dismissible fade show anuncio-sistema`;
+                    alertDiv.setAttribute('role', 'alert');
+                    alertDiv.setAttribute('data-anuncio-id', anuncio.id);
+                    alertDiv.innerHTML = `
+                        <strong>${anuncio.titulo}</strong><br>
+                        ${anuncio.mensagem.replace(/\n/g, '<br>')}
+                        <button type="button" class="btn-close" onclick="fecharAnuncio(${anuncio.id})" aria-label="Fechar"></button>
+                    `;
+                    container.appendChild(alertDiv);
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao carregar anúncios:', error));
+    
+    // Função para fechar anúncio
+    function fecharAnuncio(anuncioId) {
+        const anuncioKey = 'anuncio_fechado_' + anuncioId;
+        localStorage.setItem(anuncioKey, 'true');
+        const alertDiv = document.querySelector(`[data-anuncio-id="${anuncioId}"]`);
+        if (alertDiv) {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 300);
+        }
+    }
+    </script>
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

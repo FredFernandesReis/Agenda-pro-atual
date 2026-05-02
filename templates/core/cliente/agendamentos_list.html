@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link" href="{% url 'cliente_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'servicos_list' %}">
+                    <i class="bi bi-scissors"></i> Serviços
+                </a>
+                <a class="nav-link" href="{% url 'profissionais_list' %}">
+                    <i class="bi bi-people"></i> Profissionais
+                </a>
+                <a class="nav-link" href="{% url 'horarios_list' %}">
+                    <i class="bi bi-clock"></i> Horários
+                </a>
+                <a class="nav-link active" href="{% url 'agendamentos_list' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-calendar-event"></i> Agendamentos</h2>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-atualizar-agendamentos">
+                        <i class="bi bi-arrow-clockwise"></i> Atualizar agora
+                    </button>
+                    <a href="{% url 'agendamento_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Novo Agendamento
+                    </a>
+                </div>
+            </div>
+
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-broadcast"></i> Atualização automática ativada a cada 1 minuto.</span>
+                <small id="contador-atualizacao">Próxima atualização em 60s</small>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select name="status" class="form-control">
+                                    <option value="">Todos os status</option>
+                                    <option value="pendente" {% if status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                    <option value="confirmado" {% if status == 'confirmado' %}selected{% endif %}>Confirmado</option>
+                                    <option value="cancelado" {% if status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                    <option value="concluido" {% if status == 'concluido' %}selected{% endif %}>Concluído</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" name="data" class="form-control" value="{{ data }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="profissional" class="form-control">
+                                    <option value="">Todos os profissionais</option>
+                                    {% for prof in profissionais %}
+                                    <option value="{{ prof.pk }}" {% if profissional_id == prof.pk|stringformat:"s" %}selected{% endif %}>
+                                        {{ prof.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Serviço</th>
+                                    <th>Profissional</th>
+                                    <th>Data/Hora</th>
+                                    <th>Telefone</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agendamento in agendamentos %}
+                                <tr>
+                                    <td>{{ agendamento.cliente_nome }}</td>
+                                    <td>{{ agendamento.servico.nome }}</td>
+                                    <td>{{ agendamento.profissional.nome }}</td>
+                                    <td>{{ agendamento.data|date:"d/m/Y" }} {{ agendamento.hora|time:"H:i" }}</td>
+                                    <td>{{ agendamento.cliente_telefone }}</td>
+                                    <td>
+                                        {% if agendamento.status == 'confirmado' %}
+                                            <span class="badge bg-success">Confirmado</span>
+                                        {% elif agendamento.status == 'pendente' %}
+                                            <span class="badge bg-warning">Pendente</span>
+                                        {% elif agendamento.status == 'cancelado' %}
+                                            <span class="badge bg-danger">Cancelado</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Concluído</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'agendamento_edit' agendamento.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'agendamento_delete' agendamento.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Nenhum agendamento encontrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const botaoAtualizar = document.getElementById('btn-atualizar-agendamentos');
+    const contador = document.getElementById('contador-atualizacao');
+    let segundosRestantes = 60;
+
+    function atualizarPagina() {
+        window.location.reload();
+    }
+
+    if (botaoAtualizar) {
+        botaoAtualizar.addEventListener('click', atualizarPagina);
+    }
+
+    setInterval(function () {
+        segundosRestantes -= 1;
+        if (contador) {
+            contador.textContent = 'Próxima atualização em ' + segundosRestantes + 's';
+        }
+
+        if (segundosRestantes <= 0) {
+            atualizarPagina();
+        }
+    }, 1000);
+});
+</script>
+{% endblock %}
+
+

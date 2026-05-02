@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ empresa.nome }} - Agendamento Online{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Cabeçalho da Empresa -->
+            <div class="card mb-4">
+                <div class="card-body text-center py-5">
+                    <h1 class="display-5 mb-3">{{ empresa.nome }}</h1>
+                    <p class="lead text-muted">Agende seu horário online de forma rápida e fácil</p>
+                </div>
+            </div>
+            
+            <!-- Informações de Contato -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações de Contato</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if empresa.telefone %}
+                        <div class="col-md-4 mb-3">
+                            <i class="bi bi-telephone-fill text-primary fs-4"></i>
+                            <h6>Telefone</h6>
+                            <p class="mb-0">
+                                <a href="tel:{{ empresa.telefone }}" class="text-decoration-none">
+                                    {{ empresa.telefone }}
+                                </a>
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if empresa.email %}
+                        <div class="col-md-4 mb-3">
+                            <i class="bi bi-envelope-fill text-primary fs-4"></i>
+                            <h6>E-mail</h6>
+                            <p class="mb-0">
+                                <a href="mailto:{{ empresa.email }}" class="text-decoration-none">
+                                    {{ empresa.email }}
+                                </a>
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if empresa.endereco %}
+                        <div class="col-md-4 mb-3">
+                            <i class="bi bi-geo-alt-fill text-primary fs-4"></i>
+                            <h6>Endereço</h6>
+                            <p class="mb-0">{{ empresa.endereco }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Horários de Funcionamento -->
+            {% if horarios_atendimento %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock"></i> Horários de Funcionamento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for horario in horarios_atendimento %}
+                        <div class="col-md-6 mb-2">
+                            <span class="badge bg-primary">{{ horario.profissional.nome }}</span><br>
+                            <strong>{{ horario.get_dia_semana_display }}:</strong>
+                            {{ horario.hora_inicio|time:"H:i" }} às {{ horario.hora_fim|time:"H:i" }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Serviços Disponíveis -->
+            {% if servicos %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-scissors"></i> Nossos Serviços</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for servico in servicos %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ servico.nome }}</h6>
+                                    {% if servico.descricao %}
+                                    <p class="text-muted small mb-0">{{ servico.descricao|truncatewords:15 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <strong class="text-primary">R$ {{ servico.preco|floatformat:2 }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ servico.duracao }} min</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Botão de Agendamento -->
+            <div class="text-center">
+                <a href="{% url 'agendamento_publico_empresa' empresa.slug %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-calendar-plus"></i> Agendar Agora
+                </a>
+                <a href="{% url 'agendamento_publico' %}" class="btn btn-secondary btn-lg ms-2">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

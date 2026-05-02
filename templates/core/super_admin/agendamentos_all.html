@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Todos os Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link" href="{% url 'super_admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'empresas_list' %}">
+                    <i class="bi bi-building"></i> Empresas
+                </a>
+                <a class="nav-link active" href="{% url 'agendamentos_all' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <h2 class="mb-4"><i class="bi bi-calendar-event"></i> Todos os Agendamentos</h2>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select name="empresa" class="form-control">
+                                    <option value="">Todas as empresas</option>
+                                    {% for emp in empresas %}
+                                    <option value="{{ emp.pk }}" {% if empresa_id == emp.pk|stringformat:"s" %}selected{% endif %}>
+                                        {{ emp.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-control">
+                                    <option value="">Todos os status</option>
+                                    <option value="pendente" {% if status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                    <option value="confirmado" {% if status == 'confirmado' %}selected{% endif %}>Confirmado</option>
+                                    <option value="cancelado" {% if status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                    <option value="concluido" {% if status == 'concluido' %}selected{% endif %}>Concluído</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" name="data" class="form-control" value="{{ data }}">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Empresa</th>
+                                    <th>Serviço</th>
+                                    <th>Profissional</th>
+                                    <th>Data/Hora</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agendamento in agendamentos %}
+                                <tr>
+                                    <td>{{ agendamento.cliente_nome }}</td>
+                                    <td>{{ agendamento.empresa.nome }}</td>
+                                    <td>{{ agendamento.servico.nome }}</td>
+                                    <td>{{ agendamento.profissional.nome }}</td>
+                                    <td>{{ agendamento.data|date:"d/m/Y" }} {{ agendamento.hora|time:"H:i" }}</td>
+                                    <td>
+                                        {% if agendamento.status == 'confirmado' %}
+                                            <span class="badge bg-success">Confirmado</span>
+                                        {% elif agendamento.status == 'pendente' %}
+                                            <span class="badge bg-warning">Pendente</span>
+                                        {% elif agendamento.status == 'cancelado' %}
+                                            <span class="badge bg-danger">Cancelado</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Concluído</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nenhum agendamento encontrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

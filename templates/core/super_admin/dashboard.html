@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link active" href="{% url 'super_admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'empresas_list' %}">
+                    <i class="bi bi-building"></i> Empresas
+                </a>
+                <a class="nav-link" href="{% url 'agendamentos_all' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+                <a class="nav-link" href="{% url 'anuncios_list' %}">
+                    <i class="bi bi-megaphone"></i> Anúncios
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <h2 class="mb-4">
+                <i class="bi bi-speedometer2"></i> Dashboard - Super Admin
+            </h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total de Empresas</h6>
+                                <h2 class="mb-0">{{ total_empresas }}</h2>
+                            </div>
+                            <div class="icon primary">
+                                <i class="bi bi-building"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Empresas Ativas</h6>
+                                <h2 class="mb-0">{{ empresas_ativas }}</h2>
+                            </div>
+                            <div class="icon success">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Agendamentos</h6>
+                                <h2 class="mb-0">{{ total_agendamentos }}</h2>
+                            </div>
+                            <div class="icon warning">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Agendamentos Hoje</h6>
+                                <h2 class="mb-0">{{ agendamentos_hoje }}</h2>
+                            </div>
+                            <div class="icon danger">
+                                <i class="bi bi-calendar-day"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-building"></i> Empresas Recentes
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Empresa</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for empresa in empresas %}
+                                        <tr>
+                                            <td>{{ empresa.nome }}</td>
+                                            <td>
+                                                {% if empresa.assinatura.ativa %}
+                                                    <span class="badge bg-success">Ativa</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inativa</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'empresa_edit' empresa.pk %}" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'empresa_assinatura' empresa.pk %}" class="btn btn-sm btn-info">
+                                                    <i class="bi bi-credit-card"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">Nenhuma empresa cadastrada</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'empresas_list' %}" class="btn btn-primary">Ver Todas</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-calendar-event"></i> Agendamentos Recentes
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Empresa</th>
+                                            <th>Data/Hora</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for agendamento in agendamentos_recentes %}
+                                        <tr>
+                                            <td>{{ agendamento.cliente_nome }}</td>
+                                            <td>{{ agendamento.empresa.nome }}</td>
+                                            <td>{{ agendamento.data|date:"d/m/Y" }} {{ agendamento.hora|time:"H:i" }}</td>
+                                            <td>
+                                                {% if agendamento.status == 'confirmado' %}
+                                                    <span class="badge bg-success">Confirmado</span>
+                                                {% elif agendamento.status == 'pendente' %}
+                                                    <span class="badge bg-warning">Pendente</span>
+                                                {% elif agendamento.status == 'cancelado' %}
+                                                    <span class="badge bg-danger">Cancelado</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Concluído</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Nenhum agendamento</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'agendamentos_all' %}" class="btn btn-primary">Ver Todos</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if anuncio %}Editar{% else %}Novo{% endif %} Anúncio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-megaphone"></i> {% if anuncio %}Editar{% else %}Novo{% endif %} Anúncio
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Título *</label>
+                            <input type="text" name="titulo" class="form-control" 
+                                   value="{{ anuncio.titulo|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mensagem *</label>
+                            <textarea name="mensagem" class="form-control" rows="5" required>{{ anuncio.mensagem|default:'' }}</textarea>
+                            <small class="form-text text-muted">Use quebras de linha para organizar o texto</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-control">
+                                <option value="info" {% if anuncio and anuncio.tipo == 'info' %}selected{% endif %}>Informação (Azul)</option>
+                                <option value="success" {% if anuncio and anuncio.tipo == 'success' %}selected{% endif %}>Sucesso (Verde)</option>
+                                <option value="warning" {% if anuncio and anuncio.tipo == 'warning' %}selected{% endif %}>Aviso (Amarelo)</option>
+                                <option value="danger" {% if anuncio and anuncio.tipo == 'danger' %}selected{% endif %}>Importante (Vermelho)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data de Expiração (Opcional)</label>
+                            <input type="datetime-local" name="data_fim" class="form-control" 
+                                   value="{% if anuncio and anuncio.data_fim %}{{ anuncio.data_fim|date:'Y-m-d\TH:i' }}{% endif %}">
+                            <small class="form-text text-muted">Deixe em branco para o anúncio não expirar</small>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="ativo" class="form-check-input" id="ativo" 
+                                       {% if not anuncio or anuncio.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    Anúncio Ativo
+                                </label>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'anuncios_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5><i class="bi bi-lightbulb"></i> Dicas</h5>
+                    <ul>
+                        <li>Use <strong>Informação</strong> para atualizações gerais do sistema</li>
+                        <li>Use <strong>Sucesso</strong> para boas notícias</li>
+                        <li>Use <strong>Aviso</strong> para alertas importantes</li>
+                        <li>Use <strong>Importante</strong> para mensagens críticas</li>
+                        <li>Os usuários podem fechar o anúncio clicando no X</li>
+                        <li>Uma vez fechado, o anúncio não aparece novamente para aquele usuário</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

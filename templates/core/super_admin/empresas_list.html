@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Empresas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link" href="{% url 'super_admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link active" href="{% url 'empresas_list' %}">
+                    <i class="bi bi-building"></i> Empresas
+                </a>
+                <a class="nav-link" href="{% url 'agendamentos_all' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-building"></i> Empresas</h2>
+                <a href="{% url 'empresa_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nova Empresa
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-10">
+                                <input type="text" name="busca" class="form-control" placeholder="Buscar por nome, CNPJ ou e-mail..." value="{{ busca }}">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CNPJ</th>
+                                    <th>E-mail</th>
+                                    <th>Telefone</th>
+                                    <th>Assinatura</th>
+                                    <th>Vencimento</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empresa in empresas %}
+                                <tr>
+                                    <td>{{ empresa.nome }}</td>
+                                    <td>{{ empresa.cnpj|default:"-" }}</td>
+                                    <td>{{ empresa.email }}</td>
+                                    <td>{{ empresa.telefone }}</td>
+                                    <td>
+                                        {% if empresa.assinatura.ativa %}
+                                            <span class="badge bg-success">Ativa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inativa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if empresa.assinatura.data_vencimento %}
+                                            {{ empresa.assinatura.data_vencimento|date:"d/m/Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'empresa_edit' empresa.pk %}" class="btn btn-sm btn-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'empresa_assinatura' empresa.pk %}" class="btn btn-sm btn-info" title="Assinatura">
+                                            <i class="bi bi-credit-card"></i>
+                                        </a>
+                                        <a href="{% url 'empresa_delete' empresa.pk %}" class="btn btn-sm btn-danger" title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Nenhuma empresa encontrada</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

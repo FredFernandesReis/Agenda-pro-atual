@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link active" href="{% url 'cliente_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'servicos_list' %}">
+                    <i class="bi bi-scissors"></i> Serviços
+                </a>
+                <a class="nav-link" href="{% url 'profissionais_list' %}">
+                    <i class="bi bi-people"></i> Profissionais
+                </a>
+                <a class="nav-link" href="{% url 'horarios_list' %}">
+                    <i class="bi bi-clock"></i> Horários
+                </a>
+                <a class="nav-link" href="{% url 'agendamentos_list' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="bi bi-speedometer2"></i> Dashboard - {{ empresa.nome }}
+                </h2>
+                <div>
+                    <a href="{% url 'agendamento_publico_empresa' empresa.slug %}" target="_blank" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-eye"></i> Ver Página Pública
+                    </a>
+                    <button type="button" class="btn btn-primary" onclick="copiarLink()">
+                        <i class="bi bi-link-45deg"></i> Copiar Link
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Card com Link Público -->
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-share"></i> Link da Sua Página de Agendamento
+                    </h5>
+                    <p class="text-muted mb-2">Compartilhe este link com seus clientes para que eles possam agendar online:</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="linkPublico" 
+                               value="{{ request.scheme }}://{{ request.get_host }}{% url 'agendamento_publico_empresa' empresa.slug %}" 
+                               readonly>
+                        <button class="btn btn-primary" type="button" onclick="copiarLink()">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bi bi-info-circle"></i> 
+                        Você também pode acessar: 
+                        <a href="{% url 'empresa_detalhes' empresa.slug %}" target="_blank">
+                            Página de Detalhes da Empresa
+                        </a>
+                    </small>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Serviços</h6>
+                                <h2 class="mb-0">{{ total_servicos }}</h2>
+                            </div>
+                            <div class="icon primary">
+                                <i class="bi bi-scissors"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Profissionais</h6>
+                                <h2 class="mb-0">{{ total_profissionais }}</h2>
+                            </div>
+                            <div class="icon success">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Agendamentos Hoje</h6>
+                                <h2 class="mb-0">{{ agendamentos_hoje }}</h2>
+                            </div>
+                            <div class="icon warning">
+                                <i class="bi bi-calendar-day"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Pendentes</h6>
+                                <h2 class="mb-0">{{ agendamentos_pendentes }}</h2>
+                            </div>
+                            <div class="icon danger">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-calendar-event"></i> Próximos Agendamentos
+                        </div>
+                        <div class="card-body">
+                            {% if proximos_agendamentos %}
+                            <div class="list-group">
+                                {% for agendamento in proximos_agendamentos %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ agendamento.cliente_nome }}</h6>
+                                            <small class="text-muted">
+                                                {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.hora|time:"H:i" }}
+                                                <br>
+                                                {{ agendamento.servico.nome }} - {{ agendamento.profissional.nome }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            {% if agendamento.status == 'confirmado' %}
+                                                <span class="badge bg-success">Confirmado</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pendente</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-center text-muted">Nenhum agendamento próximo</p>
+                            {% endif %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'agendamentos_list' %}" class="btn btn-primary">Ver Todos</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-clock-history"></i> Agendamentos Recentes
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Data/Hora</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for agendamento in agendamentos_recentes %}
+                                        <tr>
+                                            <td>{{ agendamento.cliente_nome }}</td>
+                                            <td>{{ agendamento.data|date:"d/m/Y" }} {{ agendamento.hora|time:"H:i" }}</td>
+                                            <td>
+                                                {% if agendamento.status == 'confirmado' %}
+                                                    <span class="badge bg-success">Confirmado</span>
+                                                {% elif agendamento.status == 'pendente' %}
+                                                    <span class="badge bg-warning">Pendente</span>
+                                                {% elif agendamento.status == 'cancelado' %}
+                                                    <span class="badge bg-danger">Cancelado</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Concluído</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">Nenhum agendamento</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copiarLink() {
+    const linkInput = document.getElementById('linkPublico');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999); // Para mobile
+    
+    navigator.clipboard.writeText(linkInput.value).then(function() {
+        // Mostrar feedback visual
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> Copiado!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-primary');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+        }, 2000);
+    }).catch(function(err) {
+        alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+    });
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendar - {{ empresa.nome }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .public-card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Cabeçalho da Empresa -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-10">
+            <div class="card public-card">
+                <div class="card-body text-center py-4">
+                    <h2 class="mb-3">{{ empresa.nome }}</h2>
+                    <div class="row">
+                        {% if empresa.telefone %}
+                        <div class="col-md-4 mb-2">
+                            <i class="bi bi-telephone-fill text-primary"></i>
+                            <strong>Telefone:</strong><br>
+                            <a href="tel:{{ empresa.telefone }}">{{ empresa.telefone }}</a>
+                        </div>
+                        {% endif %}
+                        {% if empresa.email %}
+                        <div class="col-md-4 mb-2">
+                            <i class="bi bi-envelope-fill text-primary"></i>
+                            <strong>E-mail:</strong><br>
+                            <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
+                        </div>
+                        {% endif %}
+                        {% if empresa.endereco %}
+                        <div class="col-md-4 mb-2">
+                            <i class="bi bi-geo-alt-fill text-primary"></i>
+                            <strong>Endereço:</strong><br>
+                            {{ empresa.endereco }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card public-card">
+                <div class="card-header text-center">
+                    <h3 class="mb-0">
+                        <i class="bi bi-calendar-plus"></i> Agendar Horário
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Selecione o barbeiro e a data para ver apenas os horários disponíveis cadastrados para ele.
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for erro in form.non_field_errors %}
+                            <div>{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Serviço *</label>
+                                {{ form.servico }}
+                                {% if form.servico.errors %}
+                                    <small class="text-danger">{{ form.servico.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Profissional *</label>
+                                {{ form.profissional }}
+                                {% if form.profissional.errors %}
+                                    <small class="text-danger">{{ form.profissional.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Data *</label>
+                                {{ form.data }}
+                                {% if form.data.errors %}
+                                    <small class="text-danger">{{ form.data.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Horário *</label>
+                                {{ form.hora }}
+                                <small class="text-muted">Os horários são carregados conforme o barbeiro selecionado.</small>
+                                <div id="ultimos-horarios-alerta" class="alert alert-warning mt-2 d-none mb-0 py-2">
+                                    <i class="bi bi-fire"></i> Atenção: últimos horários disponíveis do dia.
+                                </div>
+                                {% if form.hora.errors %}
+                                    <small class="text-danger d-block">{{ form.hora.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Seu Nome *</label>
+                            {{ form.cliente_nome }}
+                            {% if form.cliente_nome.errors %}
+                                <small class="text-danger">{{ form.cliente_nome.errors|join:", " }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefone *</label>
+                                {{ form.cliente_telefone }}
+                                {% if form.cliente_telefone.errors %}
+                                    <small class="text-danger">{{ form.cliente_telefone.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-mail</label>
+                                {{ form.cliente_email }}
+                                {% if form.cliente_email.errors %}
+                                    <small class="text-danger">{{ form.cliente_email.errors|join:", " }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observações</label>
+                            {{ form.observacoes }}
+                            {% if form.observacoes.errors %}
+                                <small class="text-danger">{{ form.observacoes.errors|join:", " }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Agendamento
+                            </button>
+                            <a href="{% url 'agendamento_publico' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Informações Adicionais -->
+            <div class="row mt-4">
+                {% if horarios_atendimento %}
+                <div class="col-md-6 mb-4">
+                    <div class="card public-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock"></i> Horários de Funcionamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                {% for horario in horarios_atendimento %}
+                                <li class="mb-2">
+                                    <span class="badge bg-primary">{{ horario.profissional.nome }}</span><br>
+                                    <strong>{{ horario.get_dia_semana_display }}:</strong>
+                                    {{ horario.hora_inicio|time:"H:i" }} às {{ horario.hora_fim|time:"H:i" }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if servicos %}
+                <div class="col-md-6 mb-4">
+                    <div class="card public-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-scissors"></i> Nossos Serviços</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                {% for servico in servicos %}
+                                <li class="mb-2">
+                                    <strong>{{ servico.nome }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        R$ {{ servico.preco|floatformat:2 }} • {{ servico.duracao }} min
+                                    </small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const profissionalEl = document.getElementById('{{ form.profissional.id_for_label }}');
+    const dataEl = document.getElementById('{{ form.data.id_for_label }}');
+    const horaEl = document.getElementById('{{ form.hora.id_for_label }}');
+    const ultimosHorariosAlerta = document.getElementById('ultimos-horarios-alerta');
+
+    if (!profissionalEl || !dataEl || !horaEl) return;
+
+    function setHorarioOptions(options, placeholder) {
+        horaEl.innerHTML = '';
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = placeholder;
+        horaEl.appendChild(first);
+
+        options.forEach((hora) => {
+            const opt = document.createElement('option');
+            opt.value = hora;
+            opt.textContent = hora;
+            horaEl.appendChild(opt);
+        });
+
+        if (ultimosHorariosAlerta) {
+            const quantidade = options.length;
+            if (quantidade > 0 && quantidade <= 3) {
+                ultimosHorariosAlerta.classList.remove('d-none');
+            } else {
+                ultimosHorariosAlerta.classList.add('d-none');
+            }
+        }
+    }
+
+    async function carregarHorarios() {
+        const profissional = profissionalEl.value;
+        const data = dataEl.value;
+
+        if (!profissional || !data) {
+            setHorarioOptions([], 'Selecione barbeiro e data');
+            return;
+        }
+
+        setHorarioOptions([], 'Carregando horários...');
+        try {
+            const url = "{% url 'api_horarios_publicos' empresa.slug %}?profissional=" + encodeURIComponent(profissional) + "&data=" + encodeURIComponent(data);
+            const response = await fetch(url);
+            const payload = await response.json();
+            const horarios = payload.horarios || [];
+
+            if (!horarios.length) {
+                setHorarioOptions([], 'Sem horários disponíveis nesta data');
+                return;
+            }
+
+            setHorarioOptions(horarios, 'Selecione um horário');
+        } catch (e) {
+            setHorarioOptions([], 'Erro ao carregar horários');
+        }
+    }
+
+    profissionalEl.addEventListener('change', carregarHorarios);
+    dataEl.addEventListener('change', carregarHorarios);
+});
+</script>
+{% endblock %}
+

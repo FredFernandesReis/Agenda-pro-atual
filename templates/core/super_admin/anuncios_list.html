@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Anúncios do Sistema{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0">
+            <nav class="nav flex-column p-3">
+                <a class="nav-link" href="{% url 'super_admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'empresas_list' %}">
+                    <i class="bi bi-building"></i> Empresas
+                </a>
+                <a class="nav-link" href="{% url 'agendamentos_all' %}">
+                    <i class="bi bi-calendar-event"></i> Agendamentos
+                </a>
+                <a class="nav-link active" href="{% url 'anuncios_list' %}">
+                    <i class="bi bi-megaphone"></i> Anúncios
+                </a>
+            </nav>
+        </div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-megaphone"></i> Anúncios do Sistema</h2>
+                <a href="{% url 'anuncio_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Anúncio
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Data Início</th>
+                                    <th>Data Fim</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anuncio in anuncios %}
+                                <tr>
+                                    <td><strong>{{ anuncio.titulo }}</strong></td>
+                                    <td>
+                                        {% if anuncio.tipo == 'info' %}
+                                            <span class="badge bg-info">Informação</span>
+                                        {% elif anuncio.tipo == 'success' %}
+                                            <span class="badge bg-success">Sucesso</span>
+                                        {% elif anuncio.tipo == 'warning' %}
+                                            <span class="badge bg-warning">Aviso</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Importante</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if anuncio.esta_ativo %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ anuncio.data_inicio|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ anuncio.data_fim|date:"d/m/Y H:i"|default:"Sem expiração" }}</td>
+                                    <td>
+                                        <a href="{% url 'anuncio_edit' anuncio.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'anuncio_delete' anuncio.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nenhum anúncio cadastrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Como funciona:</strong> Os anúncios aparecem no topo da tela para todos os usuários logados. 
+                Eles podem fechar clicando no X, e o anúncio não aparecerá novamente para aquele usuário.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

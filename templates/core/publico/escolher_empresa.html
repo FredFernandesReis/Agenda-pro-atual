@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendar - Escolha sua Empresa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-calendar-check text-primary"></i> Agenda PRO
+                </h1>
+                <p class="lead text-muted">Escolha a empresa para realizar seu agendamento</p>
+            </div>
+            
+            <div class="row">
+                {% for empresa in empresas %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title text-center mb-3">{{ empresa.nome }}</h4>
+                            
+                            <div class="mb-3">
+                                {% if empresa.telefone %}
+                                <p class="mb-2">
+                                    <i class="bi bi-telephone-fill text-primary"></i>
+                                    <strong>Telefone:</strong> 
+                                    <a href="tel:{{ empresa.telefone }}">{{ empresa.telefone }}</a>
+                                </p>
+                                {% endif %}
+                                
+                                {% if empresa.email %}
+                                <p class="mb-2">
+                                    <i class="bi bi-envelope-fill text-primary"></i>
+                                    <strong>E-mail:</strong> 
+                                    <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
+                                </p>
+                                {% endif %}
+                                
+                                {% if empresa.endereco %}
+                                <p class="mb-2">
+                                    <i class="bi bi-geo-alt-fill text-primary"></i>
+                                    <strong>Endereço:</strong><br>
+                                    <small>{{ empresa.endereco|truncatewords:15 }}</small>
+                                </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{% url 'empresa_detalhes' empresa.slug %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-info-circle"></i> Ver Detalhes
+                                </a>
+                                <a href="{% url 'agendamento_publico_empresa' empresa.slug %}" class="btn btn-primary">
+                                    <i class="bi bi-calendar-plus"></i> Agendar Agora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle"></i> Nenhuma empresa disponível no momento.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
