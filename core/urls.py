@@ -44,6 +44,7 @@ urlpatterns = [
     # Cliente - Horários
     path('horarios/', views.horarios_list, name='horarios_list'),
     path('horarios/criar/', views.horario_create, name='horario_create'),
+    path('horarios/criar-varios/', views.horario_bulk_create, name='horario_bulk_create'),
     path('horarios/<int:pk>/editar/', views.horario_edit, name='horario_edit'),
     path('horarios/<int:pk>/excluir/', views.horario_delete, name='horario_delete'),
     
@@ -53,6 +54,9 @@ urlpatterns = [
     path('agendamentos/<int:pk>/editar/', views.agendamento_edit, name='agendamento_edit'),
     path('agendamentos/<int:pk>/excluir/', views.agendamento_delete, name='agendamento_delete'),
     
+    # Cliente - Perfil da Barbearia
+    path('perfil/', views.perfil_empresa, name='perfil_empresa'),
+
     # Cliente Dashboard
     path('cliente/', views.cliente_dashboard, name='cliente_dashboard'),
     
@@ -60,10 +64,12 @@ urlpatterns = [
     path('agendamento-publico/', views.agendamento_publico, name='agendamento_publico'),
     path('agendamento-publico/<str:empresa_slug>/', views.agendamento_publico, name='agendamento_publico_empresa'),
     path('agendamento-publico/<str:empresa_slug>/horarios/', views.api_horarios_publicos, name='api_horarios_publicos'),
+    path('agendamento-publico/<str:empresa_slug>/dias-disponiveis/', views.api_dias_disponiveis, name='api_dias_disponiveis'),
     path('agendamento-publico/<str:empresa_slug>/sobre/', views.empresa_detalhes, name='empresa_detalhes'),
     path('agendamento-publico/<str:empresa_slug>/sucesso/', views.agendamento_publico_sucesso, name='agendamento_publico_sucesso'),
     
     # API
     path('api/anuncios/', views.api_anuncios, name='api_anuncios'),
+    path('api/agendamentos-alerta/', views.api_agendamentos_alerta, name='api_agendamentos_alerta'),
 ]
 

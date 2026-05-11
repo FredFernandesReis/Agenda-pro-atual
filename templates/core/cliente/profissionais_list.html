@@ -10,6 +10,9 @@
                 <a class="nav-link" href="{% url 'cliente_dashboard' %}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
+                <a class="nav-link" href="{% url 'perfil_empresa' %}">
+                    <i class="bi bi-shop"></i> Perfil
+                </a>
                 <a class="nav-link" href="{% url 'servicos_list' %}">
                     <i class="bi bi-scissors"></i> Serviços
                 </a>
@@ -71,7 +74,10 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{% url 'horario_create' %}?profissional={{ profissional.pk }}" class="btn btn-sm btn-outline-info" title="Definir horários">
+                                        <a href="{% url 'horario_bulk_create' %}?profissional={{ profissional.pk }}" class="btn btn-sm btn-outline-info" title="Vários dias de uma vez">
+                                            <i class="bi bi-calendar-week"></i>
+                                        </a>
+                                        <a href="{% url 'horario_create' %}?profissional={{ profissional.pk }}" class="btn btn-sm btn-outline-secondary" title="Um dia só">
                                             <i class="bi bi-clock"></i>
                                         </a>
                                         <a href="{% url 'profissional_edit' profissional.pk %}" class="btn btn-sm btn-primary">

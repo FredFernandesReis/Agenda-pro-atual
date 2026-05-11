@@ -1,270 +1,736 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Agendar - {{ empresa.nome }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    .public-card {
-        border: none;
-        border-radius: 14px;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
-    }
+/* ── Layout geral ── */
+body { background: #f5f5f5; }
+
+/* ── Cabeçalho público (apenas logo, sem banner) ── */
+.pub-header {
+    background: var(--primary-color);
+    border-bottom: 3px solid var(--accent-color);
+    padding: 1.35rem 1.5rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.pub-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    flex-wrap: wrap;
+}
+.pub-header-logo {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    background: #fff;
+    flex-shrink: 0;
+}
+.pub-header-logo-ph {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-color);
+    background: rgba(201,168,76,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; color: var(--accent-color);
+    flex-shrink: 0;
+}
+.pub-header-text h1 {
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    line-height: 1.15;
+}
+.pub-header-text p {
+    color: rgba(255,255,255,0.82);
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    max-width: 640px;
+}
+.pub-header-text p i { color: var(--accent-color); margin-right: 0.25rem; }
+
+/* ── Layout em grade ── */
+.pub-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 3rem;
+}
+@media (max-width: 900px) {
+    .pub-grid { grid-template-columns: 1fr; }
+    .pub-sidebar { order: -1; }
+}
+
+/* ── Card base ── */
+.pub-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+.pub-card-header {
+    background: var(--primary-color);
+    color: var(--accent-color);
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 2px solid var(--accent-color);
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.pub-card-body { padding: 1.25rem; }
+
+/* ── Passo do formulário ── */
+.step-indicator {
+    display: flex; gap: 0; margin-bottom: 1.5rem;
+    border-radius: 10px; overflow: hidden;
+    border: 1.5px solid var(--gray-200);
+}
+.step-indicator .step {
+    flex: 1; padding: 0.6rem; text-align: center;
+    font-size: 0.8rem; font-weight: 600; color: var(--gray-500);
+    background: var(--gray-50);
+    transition: all 0.2s;
+}
+.step-indicator .step.active {
+    background: var(--primary-color);
+    color: var(--accent-color);
+}
+.step-indicator .step + .step { border-left: 1.5px solid var(--gray-200); }
+
+/* ── Selects e inputs ── */
+.pub-form select, .pub-form input[type="text"],
+.pub-form input[type="tel"], .pub-form input[type="email"],
+.pub-form textarea {
+    width: 100%;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.93rem;
+    color: var(--gray-800);
+    background: #fff;
+    transition: border 0.18s, box-shadow 0.18s;
+    appearance: none;
+}
+.pub-form select:focus, .pub-form input:focus, .pub-form textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
+    outline: none;
+}
+.pub-form .field-label {
+    font-size: 0.82rem; font-weight: 700;
+    color: var(--gray-600); text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 0.3rem;
+    display: block;
+}
+
+/* ── Calendário visual ── */
+.cal-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+}
+.cal-nav button {
+    background: none; border: none; cursor: pointer;
+    padding: 0.3rem 0.6rem; font-size: 1.2rem;
+    color: var(--accent-color); border-radius: 6px;
+    transition: background 0.15s;
+}
+.cal-nav button:hover { background: var(--accent-light); }
+.cal-nav .cal-title { font-weight: 700; font-size: 1rem; color: var(--gray-800); }
+
+.cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px; text-align: center;
+}
+.cal-grid .cal-day-name {
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--gray-500); padding: 0.2rem 0;
+    text-transform: uppercase;
+}
+.cal-grid .cal-day {
+    aspect-ratio: 1; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s;
+    border: 2px solid transparent;
+    user-select: none;
+}
+.cal-day.empty  { background: transparent; cursor: default; }
+.cal-day.past   { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; }
+.cal-day.unavailable {
+    background: var(--gray-100); color: var(--gray-400);
+    cursor: not-allowed; opacity: 0.6;
+    position: relative;
+}
+.cal-day.unavailable::after {
+    content: ""; position: absolute; inset: 0;
+    border-radius: 6px;
+    background: repeating-linear-gradient(
+        45deg, transparent, transparent 4px,
+        rgba(0,0,0,0.04) 4px, rgba(0,0,0,0.04) 5px
+    );
+}
+.cal-day.available {
+    background: #fff;
+    color: var(--gray-800);
+    border-color: var(--gray-200);
+}
+.cal-day.available:hover {
+    background: var(--accent-light);
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    transform: scale(1.08);
+}
+.cal-day.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(201,168,76,0.45);
+    transform: scale(1.1);
+}
+.cal-day.today {
+    box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+/* ── Lista de horários ── */
+.horarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px; margin-top: 0.5rem;
+}
+.hora-btn {
+    padding: 0.45rem 0;
+    border-radius: 8px;
+    border: 2px solid var(--gray-200);
+    background: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+}
+.hora-btn:hover {
+    border-color: var(--accent-color);
+    background: var(--accent-light);
+    color: var(--primary-color);
+}
+.hora-btn.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-gold);
+}
+.hora-btn.disabled {
+    opacity: 0.4; cursor: not-allowed;
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+/* ── Aviso poucos horários ── */
+.ultimos-aviso {
+    background: #fef9c3; border: 1px solid #fde68a;
+    border-radius: 8px; padding: 0.5rem 0.85rem;
+    font-size: 0.83rem; font-weight: 600; color: #854d0e;
+    margin-bottom: 0.75rem; display: none;
+}
+
+/* ── Serviços card ── */
+.servico-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+.servico-item:last-child { border-bottom: none; }
+.servico-nome { font-weight: 600; font-size: 0.92rem; color: var(--gray-800); }
+.servico-desc { font-size: 0.8rem; color: var(--gray-500); margin-top: 1px; }
+.servico-preco {
+    text-align: right; flex-shrink: 0; margin-left: 1rem;
+}
+.servico-preco strong { color: var(--accent-color); font-size: 0.95rem; }
+.servico-preco small  { display: block; font-size: 0.75rem; color: var(--gray-400); }
+
+/* ── Profissional cards ── */
+.barbeiro-cards { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.barbeiro-card {
+    flex: 1 1 120px; max-width: 130px;
+    border: 2px solid var(--gray-200); border-radius: 12px;
+    padding: 0.85rem 0.5rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+}
+.barbeiro-card:hover { border-color: var(--accent-color); background: var(--accent-light); }
+.barbeiro-card.selected { border-color: var(--accent-color); background: var(--primary-color); color: #fff; }
+.barbeiro-card .bc-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--gray-200); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 1.3rem; color: var(--gray-500);
+    margin: 0 auto 0.4rem;
+}
+.barbeiro-card.selected .bc-icon { background: rgba(201,168,76,0.25); color: var(--accent-color); }
+.barbeiro-card .bc-nome { font-size: 0.83rem; font-weight: 700; }
+
+/* ── Botão submit ── */
+.btn-agendar {
+    width: 100%; padding: 0.85rem;
+    background: var(--accent-color);
+    border: none; border-radius: 12px;
+    font-size: 1rem; font-weight: 800;
+    color: var(--primary-color);
+    cursor: pointer; letter-spacing: 0.3px;
+    transition: all 0.2s; margin-top: 0.5rem;
+    box-shadow: var(--shadow-gold);
+}
+.btn-agendar:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201,168,76,0.45);
+}
+
+/* ── Responsivo mobile ── */
+@media (max-width: 600px) {
+    .pub-header { padding: 1rem; }
+    .pub-header-logo, .pub-header-logo-ph { width: 72px; height: 72px; }
+    .pub-grid { padding: 1rem 0.75rem 2rem; }
+    .barbeiro-cards { gap: 0.5rem; }
+    .barbeiro-card { max-width: calc(50% - 0.5rem); }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Cabeçalho da Empresa -->
-    <div class="row justify-content-center mb-4">
-        <div class="col-md-10">
-            <div class="card public-card">
-                <div class="card-body text-center py-4">
-                    <h2 class="mb-3">{{ empresa.nome }}</h2>
-                    <div class="row">
-                        {% if empresa.telefone %}
-                        <div class="col-md-4 mb-2">
-                            <i class="bi bi-telephone-fill text-primary"></i>
-                            <strong>Telefone:</strong><br>
-                            <a href="tel:{{ empresa.telefone }}">{{ empresa.telefone }}</a>
-                        </div>
-                        {% endif %}
-                        {% if empresa.email %}
-                        <div class="col-md-4 mb-2">
-                            <i class="bi bi-envelope-fill text-primary"></i>
-                            <strong>E-mail:</strong><br>
-                            <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
-                        </div>
-                        {% endif %}
-                        {% if empresa.endereco %}
-                        <div class="col-md-4 mb-2">
-                            <i class="bi bi-geo-alt-fill text-primary"></i>
-                            <strong>Endereço:</strong><br>
-                            {{ empresa.endereco }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card public-card">
-                <div class="card-header text-center">
-                    <h3 class="mb-0">
-                        <i class="bi bi-calendar-plus"></i> Agendar Horário
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        Selecione o barbeiro e a data para ver apenas os horários disponíveis cadastrados para ele.
-                    </div>
 
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for erro in form.non_field_errors %}
-                            <div>{{ erro }}</div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Serviço *</label>
-                                {{ form.servico }}
-                                {% if form.servico.errors %}
-                                    <small class="text-danger">{{ form.servico.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Profissional *</label>
-                                {{ form.profissional }}
-                                {% if form.profissional.errors %}
-                                    <small class="text-danger">{{ form.profissional.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Data *</label>
-                                {{ form.data }}
-                                {% if form.data.errors %}
-                                    <small class="text-danger">{{ form.data.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Horário *</label>
-                                {{ form.hora }}
-                                <small class="text-muted">Os horários são carregados conforme o barbeiro selecionado.</small>
-                                <div id="ultimos-horarios-alerta" class="alert alert-warning mt-2 d-none mb-0 py-2">
-                                    <i class="bi bi-fire"></i> Atenção: últimos horários disponíveis do dia.
-                                </div>
-                                {% if form.hora.errors %}
-                                    <small class="text-danger d-block">{{ form.hora.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Seu Nome *</label>
-                            {{ form.cliente_nome }}
-                            {% if form.cliente_nome.errors %}
-                                <small class="text-danger">{{ form.cliente_nome.errors|join:", " }}</small>
-                            {% endif %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Telefone *</label>
-                                {{ form.cliente_telefone }}
-                                {% if form.cliente_telefone.errors %}
-                                    <small class="text-danger">{{ form.cliente_telefone.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">E-mail</label>
-                                {{ form.cliente_email }}
-                                {% if form.cliente_email.errors %}
-                                    <small class="text-danger">{{ form.cliente_email.errors|join:", " }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Observações</label>
-                            {{ form.observacoes }}
-                            {% if form.observacoes.errors %}
-                                <small class="text-danger">{{ form.observacoes.errors|join:", " }}</small>
-                            {% endif %}
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Confirmar Agendamento
-                            </button>
-                            <a href="{% url 'agendamento_publico' %}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Voltar
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Informações Adicionais -->
-            <div class="row mt-4">
-                {% if horarios_atendimento %}
-                <div class="col-md-6 mb-4">
-                    <div class="card public-card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-clock"></i> Horários de Funcionamento</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled mb-0">
-                                {% for horario in horarios_atendimento %}
-                                <li class="mb-2">
-                                    <span class="badge bg-primary">{{ horario.profissional.nome }}</span><br>
-                                    <strong>{{ horario.get_dia_semana_display }}:</strong>
-                                    {{ horario.hora_inicio|time:"H:i" }} às {{ horario.hora_fim|time:"H:i" }}
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                {% if servicos %}
-                <div class="col-md-6 mb-4">
-                    <div class="card public-card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-scissors"></i> Nossos Serviços</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled mb-0">
-                                {% for servico in servicos %}
-                                <li class="mb-2">
-                                    <strong>{{ servico.nome }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        R$ {{ servico.preco|floatformat:2 }} • {{ servico.duracao }} min
-                                    </small>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
+<!-- ── Cabeçalho: só logo (sem banner de capa) ── -->
+<div class="pub-header">
+    <div class="pub-header-inner">
+        {% if empresa.logo %}
+            <img src="{{ empresa.logo.url }}" alt="Logo {{ empresa.nome }}" class="pub-header-logo">
+        {% else %}
+            <div class="pub-header-logo-ph" aria-hidden="true"><i class="bi bi-scissors"></i></div>
+        {% endif %}
+        <div class="pub-header-text">
+            <h1>{{ empresa.nome }}</h1>
+            {% if empresa.descricao %}<p>{{ empresa.descricao }}</p>{% endif %}
+            {% if empresa.endereco %}<p><i class="bi bi-geo-alt-fill"></i>{{ empresa.endereco }}</p>{% endif %}
         </div>
     </div>
 </div>
+
+<!-- ── GRID ── -->
+<div class="pub-grid">
+
+    <!-- ── COLUNA PRINCIPAL: FORMULÁRIO ── -->
+    <div class="pub-main">
+
+        <!-- Erros gerais -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+
+        <form method="post" class="pub-form" id="form-agendamento">
+            {% csrf_token %}
+
+            <!-- INPUT HIDDEN que será preenchido pelo JS -->
+            <input type="hidden" name="profissional" id="input-profissional">
+            <input type="hidden" name="data"         id="input-data">
+            <input type="hidden" name="hora"         id="input-hora">
+            <input type="hidden" name="servico"      id="input-servico">
+
+            <!-- PASSO 1 · SERVIÇO -->
+            <div class="pub-card">
+                <div class="pub-card-header"><i class="bi bi-scissors"></i> 1. Escolha o Serviço</div>
+                <div class="pub-card-body">
+                    {% if form.servico.errors %}<div class="alert alert-danger">{{ form.servico.errors|join:", " }}</div>{% endif %}
+                    <div style="display:grid; gap:0.5rem;">
+                        {% for servico in servicos %}
+                        <label class="servico-item" style="cursor:pointer;">
+                            <input type="radio" name="_servico_sel" value="{{ servico.pk }}" style="margin-right:0.6rem; accent-color: var(--accent-color);">
+                            <div style="flex:1;">
+                                <div class="servico-nome">{{ servico.nome }}</div>
+                                {% if servico.descricao %}<div class="servico-desc">{{ servico.descricao|truncatewords:10 }}</div>{% endif %}
+                            </div>
+                            <div class="servico-preco">
+                                <strong>R$ {{ servico.preco|floatformat:2 }}</strong>
+                                <small>{{ servico.duracao }} min</small>
+                            </div>
+                        </label>
+                        {% empty %}
+                        <p class="text-muted">Nenhum serviço cadastrado.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASSO 2 · BARBEIRO -->
+            <div class="pub-card">
+                <div class="pub-card-header"><i class="bi bi-person-badge"></i> 2. Escolha o Barbeiro</div>
+                <div class="pub-card-body">
+                    {% if form.profissional.errors %}<div class="alert alert-danger">{{ form.profissional.errors|join:", " }}</div>{% endif %}
+                    <div class="barbeiro-cards" id="barbeiros-container">
+                        {% for barbeiro in profissionais %}
+                        <div class="barbeiro-card" data-id="{{ barbeiro.pk }}" onclick="selecionarBarbeiro(this, {{ barbeiro.pk }})">
+                            <div class="bc-icon"><i class="bi bi-person-fill"></i></div>
+                            <div class="bc-nome">{{ barbeiro.nome }}</div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">Nenhum barbeiro cadastrado.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASSO 3 · DATA -->
+            <div class="pub-card">
+                <div class="pub-card-header"><i class="bi bi-calendar3"></i> 3. Escolha a Data</div>
+                <div class="pub-card-body">
+                    {% if form.data.errors %}<div class="alert alert-danger">{{ form.data.errors|join:", " }}</div>{% endif %}
+                    <div id="cal-aviso" class="alert alert-info" style="font-size:0.85rem; margin-bottom:0.75rem;">
+                        <i class="bi bi-info-circle"></i> Selecione um barbeiro para ver os dias disponíveis.
+                    </div>
+                    <div class="cal-nav">
+                        <button type="button" onclick="mudarMes(-1)" title="Mês anterior"><i class="bi bi-chevron-left"></i></button>
+                        <span class="cal-title" id="cal-titulo"></span>
+                        <button type="button" onclick="mudarMes(1)"  title="Próximo mês"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </div>
+            </div>
+
+            <!-- PASSO 4 · HORÁRIO -->
+            <div class="pub-card">
+                <div class="pub-card-header"><i class="bi bi-clock"></i> 4. Escolha o Horário</div>
+                <div class="pub-card-body">
+                    {% if form.hora.errors %}<div class="alert alert-danger">{{ form.hora.errors|join:", " }}</div>{% endif %}
+                    <div id="ultimos-aviso" class="ultimos-aviso">
+                        <i class="bi bi-fire"></i> Últimos horários disponíveis do dia!
+                    </div>
+                    <div id="horarios-loading" class="text-muted" style="font-size:0.88rem; display:none;">
+                        <i class="bi bi-hourglass-split"></i> Carregando horários...
+                    </div>
+                    <div class="horarios-grid" id="horarios-grid">
+                        <p class="text-muted" style="grid-column:1/-1; font-size:0.85rem;">
+                            Selecione barbeiro e data primeiro.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASSO 5 · DADOS DO CLIENTE -->
+            <div class="pub-card">
+                <div class="pub-card-header"><i class="bi bi-person"></i> 5. Seus Dados</div>
+                <div class="pub-card-body" style="display:grid; gap:0.85rem;">
+                    <div>
+                        <label class="field-label">Nome completo *</label>
+                        {{ form.cliente_nome }}
+                        {% if form.cliente_nome.errors %}<small class="text-danger">{{ form.cliente_nome.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                        <div>
+                            <label class="field-label">Telefone / WhatsApp *</label>
+                            {{ form.cliente_telefone }}
+                            {% if form.cliente_telefone.errors %}<small class="text-danger">{{ form.cliente_telefone.errors|join:", " }}</small>{% endif %}
+                        </div>
+                        <div>
+                            <label class="field-label">E-mail</label>
+                            {{ form.cliente_email }}
+                            {% if form.cliente_email.errors %}<small class="text-danger">{{ form.cliente_email.errors|join:", " }}</small>{% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">Observações</label>
+                        {{ form.observacoes }}
+                    </div>
+                    <button type="submit" class="btn-agendar">
+                        <i class="bi bi-check-circle"></i> Confirmar Agendamento
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- ── SIDEBAR ── -->
+    <div class="pub-sidebar">
+
+        {% if empresa.telefone or empresa.whatsapp_numero %}
+        <div class="pub-card">
+            <div class="pub-card-header"><i class="bi bi-telephone"></i> Contato</div>
+            <div class="pub-card-body" style="display:grid; gap:0.6rem;">
+                {% if empresa.telefone %}
+                <a href="tel:{{ empresa.telefone }}" style="display:flex; align-items:center; gap:0.5rem; color:var(--gray-700); text-decoration:none;">
+                    <i class="bi bi-telephone-fill" style="color:var(--accent-color);"></i> {{ empresa.telefone }}
+                </a>
+                {% endif %}
+                {% if empresa.whatsapp_numero %}
+                <a href="https://wa.me/55{{ empresa.whatsapp_numero|cut:' '|cut:'('|cut:')'|cut:'-' }}" target="_blank"
+                   style="display:flex; align-items:center; gap:0.5rem; color:#16a34a; text-decoration:none; font-weight:600;">
+                    <i class="bi bi-whatsapp"></i> Falar no WhatsApp
+                </a>
+                {% endif %}
+                {% if empresa.email %}
+                <a href="mailto:{{ empresa.email }}" style="display:flex; align-items:center; gap:0.5rem; color:var(--gray-600); text-decoration:none; font-size:0.88rem;">
+                    <i class="bi bi-envelope-fill" style="color:var(--accent-color);"></i> {{ empresa.email }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if horarios_atendimento %}
+        <div class="pub-card">
+            <div class="pub-card-header"><i class="bi bi-clock"></i> Horários por Barbeiro</div>
+            <div class="pub-card-body" style="display:grid; gap:0.5rem; font-size:0.88rem;">
+                {% regroup horarios_atendimento by profissional as por_barbeiro %}
+                {% for grupo in por_barbeiro %}
+                <div style="margin-bottom:0.5rem;">
+                    <strong style="color:var(--accent-color);">{{ grupo.grouper.nome }}</strong>
+                    {% for h in grupo.list %}
+                    <div style="color:var(--gray-600); padding-left:0.5rem;">
+                        {{ h.get_dia_semana_display }}: {{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if servicos %}
+        <div class="pub-card">
+            <div class="pub-card-header"><i class="bi bi-scissors"></i> Serviços & Preços</div>
+            <div class="pub-card-body" style="padding:0.75rem 1.25rem;">
+                {% for servico in servicos %}
+                <div class="servico-item">
+                    <div>
+                        <div class="servico-nome">{{ servico.nome }}</div>
+                        {% if servico.descricao %}<div class="servico-desc">{{ servico.descricao|truncatewords:8 }}</div>{% endif %}
+                    </div>
+                    <div class="servico-preco">
+                        <strong>R$ {{ servico.preco|floatformat:2 }}</strong>
+                        <small>{{ servico.duracao }} min</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /sidebar -->
+</div><!-- /pub-grid -->
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const profissionalEl = document.getElementById('{{ form.profissional.id_for_label }}');
-    const dataEl = document.getElementById('{{ form.data.id_for_label }}');
-    const horaEl = document.getElementById('{{ form.hora.id_for_label }}');
-    const ultimosHorariosAlerta = document.getElementById('ultimos-horarios-alerta');
+// ── Estado ──
+let barbeirSelecionado = null;
+let dataSelecionada    = null;
+let horaSelecionada    = null;
+let diasDisponiveis    = [];
+let calAno, calMes;
 
-    if (!profissionalEl || !dataEl || !horaEl) return;
+const DIAS_NOME = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES     = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-    function setHorarioOptions(options, placeholder) {
-        horaEl.innerHTML = '';
-        const first = document.createElement('option');
-        first.value = '';
-        first.textContent = placeholder;
-        horaEl.appendChild(first);
+// URL das APIs passadas pelo Django
+const urlDias    = "{% url 'api_dias_disponiveis'  empresa.slug %}";
+const urlHorarios= "{% url 'api_horarios_publicos' empresa.slug %}";
 
-        options.forEach((hora) => {
-            const opt = document.createElement('option');
-            opt.value = hora;
-            opt.textContent = hora;
-            horaEl.appendChild(opt);
+/** Data local YYYY-MM-DD (evita erro de fuso com toISOString). */
+function formatLocalDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+}
+
+// ── Inicialização ──
+document.addEventListener('DOMContentLoaded', () => {
+    const hoje = new Date();
+    calAno = hoje.getFullYear();
+    calMes = hoje.getMonth();
+    renderCalendario();
+
+    // Serviço via radio
+    document.querySelectorAll('input[name="_servico_sel"]').forEach(r => {
+        r.addEventListener('change', () => {
+            document.getElementById('input-servico').value = r.value;
         });
+    });
+});
 
-        if (ultimosHorariosAlerta) {
-            const quantidade = options.length;
-            if (quantidade > 0 && quantidade <= 3) {
-                ultimosHorariosAlerta.classList.remove('d-none');
-            } else {
-                ultimosHorariosAlerta.classList.add('d-none');
-            }
-        }
+// ── Seleciona barbeiro ──
+function selecionarBarbeiro(el, id) {
+    document.querySelectorAll('.barbeiro-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    barbeirSelecionado = id;
+    document.getElementById('input-profissional').value = id;
+    document.getElementById('cal-aviso').style.display = 'none';
+    carregarDiasDisponiveis(id);
+}
+
+async function carregarDiasDisponiveis(id) {
+    diasDisponiveis = [];
+    dataSelecionada = null;
+    document.getElementById('input-data').value = '';
+    limparHorarios();
+    try {
+        const res = await fetch(urlDias + '?profissional=' + id);
+        const data = await res.json();
+        diasDisponiveis = (data.dias || []).map(function (x) { return parseInt(x, 10); });
+    } catch(e) {}
+    renderCalendario();
+}
+
+// ── Calendário ──
+function renderCalendario() {
+    const titulo = document.getElementById('cal-titulo');
+    const grid   = document.getElementById('cal-grid');
+    if (!titulo || !grid) return;
+
+    titulo.textContent = MESES[calMes] + ' ' + calAno;
+
+    grid.innerHTML = '';
+
+    // Cabeçalho semana (Dom → Sáb)
+    DIAS_NOME.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+
+    const hoje       = new Date(); hoje.setHours(0,0,0,0);
+    const primeiroDia = new Date(calAno, calMes, 1).getDay(); // 0=Dom
+    const totalDias   = new Date(calAno, calMes+1, 0).getDate();
+
+    // Células vazias antes do dia 1
+    for (let i = 0; i < primeiroDia; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
     }
 
-    async function carregarHorarios() {
-        const profissional = profissionalEl.value;
-        const data = dataEl.value;
+    for (let d = 1; d <= totalDias; d++) {
+        const data = new Date(calAno, calMes, d);
+        data.setHours(0,0,0,0);
+        const diasSemanaJs = data.getDay(); // JS: 0=Dom … 6=Sáb
+        // Modelo Django HorarioAtendimento: 0=Seg … 6=Dom (igual date.weekday())
+        const diaDjango = (diasSemanaJs + 6) % 7;
 
-        if (!profissional || !data) {
-            setHorarioOptions([], 'Selecione barbeiro e data');
+        const el = document.createElement('div');
+        el.textContent = d;
+
+        const dataStr = formatLocalDate(data);
+        const isHoje  = data.getTime() === hoje.getTime();
+        if (isHoje) el.classList.add('today');
+
+        if (data < hoje) {
+            el.className = 'cal-day past';
+        } else if (barbeirSelecionado && !diasDisponiveis.includes(diaDjango)) {
+            /* Barbeiro sem este dia na agenda (ou sem nenhum horário cadastrado). */
+            el.className = 'cal-day unavailable';
+            if (isHoje) el.classList.add('today');
+        } else {
+            el.className = 'cal-day available';
+            if (isHoje) el.classList.add('today');
+            el.addEventListener('click', () => selecionarData(dataStr, el));
+
+            if (dataStr === dataSelecionada) el.classList.add('selected');
+        }
+
+        grid.appendChild(el);
+    }
+}
+
+function mudarMes(delta) {
+    calMes += delta;
+    if (calMes > 11) { calMes = 0; calAno++; }
+    if (calMes < 0)  { calMes = 11; calAno--; }
+    renderCalendario();
+}
+
+function selecionarData(dataStr, el) {
+    dataSelecionada = dataStr;
+    document.getElementById('input-data').value = dataStr;
+
+    // Marcar visualmente
+    document.querySelectorAll('.cal-day').forEach(c => {
+        c.classList.remove('selected');
+    });
+    el.classList.add('selected');
+
+    // Resetar hora
+    horaSelecionada = null;
+    document.getElementById('input-hora').value = '';
+
+    carregarHorarios();
+}
+
+// ── Horários ──
+async function carregarHorarios() {
+    if (!barbeirSelecionado || !dataSelecionada) return;
+    const loading = document.getElementById('horarios-loading');
+    const grid    = document.getElementById('horarios-grid');
+    loading.style.display = 'block';
+    grid.innerHTML = '';
+
+    try {
+        const url = urlHorarios + '?profissional=' + barbeirSelecionado + '&data=' + dataSelecionada;
+        const res  = await fetch(url);
+        const data = await res.json();
+        const lista = data.horarios || [];
+
+        loading.style.display = 'none';
+
+        const aviso = document.getElementById('ultimos-aviso');
+        aviso.style.display = (lista.length > 0 && lista.length <= 3) ? 'block' : 'none';
+
+        if (!lista.length) {
+            grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;font-size:0.85rem;">Sem horários disponíveis neste dia.</p>';
             return;
         }
 
-        setHorarioOptions([], 'Carregando horários...');
-        try {
-            const url = "{% url 'api_horarios_publicos' empresa.slug %}?profissional=" + encodeURIComponent(profissional) + "&data=" + encodeURIComponent(data);
-            const response = await fetch(url);
-            const payload = await response.json();
-            const horarios = payload.horarios || [];
-
-            if (!horarios.length) {
-                setHorarioOptions([], 'Sem horários disponíveis nesta data');
-                return;
-            }
-
-            setHorarioOptions(horarios, 'Selecione um horário');
-        } catch (e) {
-            setHorarioOptions([], 'Erro ao carregar horários');
-        }
+        lista.forEach(hora => {
+            const btn = document.createElement('div');
+            btn.className = 'hora-btn';
+            btn.textContent = hora;
+            btn.onclick = () => selecionarHora(hora, btn);
+            grid.appendChild(btn);
+        });
+    } catch(e) {
+        loading.style.display = 'none';
+        grid.innerHTML = '<p class="text-danger" style="font-size:0.85rem;">Erro ao carregar horários.</p>';
     }
+}
 
-    profissionalEl.addEventListener('change', carregarHorarios);
-    dataEl.addEventListener('change', carregarHorarios);
-});
+function selecionarHora(hora, el) {
+    horaSelecionada = hora;
+    document.getElementById('input-hora').value = hora;
+    document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function limparHorarios() {
+    const grid = document.getElementById('horarios-grid');
+    grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;font-size:0.85rem;">Selecione barbeiro e data primeiro.</p>';
+    document.getElementById('ultimos-aviso').style.display = 'none';
+    horaSelecionada = null;
+    document.getElementById('input-hora').value = '';
+}
 </script>
 {% endblock %}
-

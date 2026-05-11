@@ -2,37 +2,74 @@
 
 {% block title %}{% if profissional %}Editar{% else %}Novo{% endif %} Profissional{% endblock %}
 
+{% block extra_css %}
+<style>
+#id_especialidades {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.45rem;
+    list-style: none;
+    padding: 0;
+    margin: 0.35rem 0 0;
+}
+#id_especialidades li { margin: 0; }
+#id_especialidades label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 0.5rem 0.6rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 0;
+    transition: border-color 0.15s, background 0.15s;
+}
+#id_especialidades label:hover { border-color: var(--accent-color); background: #fffbf0; }
+#id_especialidades input { width: 1.05rem; height: 1.05rem; accent-color: var(--accent-color); flex-shrink: 0; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            <div class="alert alert-info mb-3" style="font-size:0.88rem;">
+                <strong><i class="bi bi-person-plus"></i> Cadastro rápido:</strong>
+                só o nome é obrigatório para aparecer na agenda pública. Telefone e e-mail são opcionais.
+                Marque as caixas dos serviços que este barbeiro faz — bem mais fácil que segurar Ctrl na lista antiga.
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">
-                        <i class="bi bi-people"></i> {% if profissional %}Editar{% else %}Novo{% endif %} Profissional
+                        <i class="bi bi-people"></i> {% if profissional %}Editar{% else %}Novo{% endif %} Barbeiro / Profissional
                     </h4>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label">Nome</label>
+                            <label class="form-label">Nome <span class="text-danger">*</span></label>
                             {{ form.nome }}
+                            {% if form.nome.help_text %}<small class="form-text text-muted">{{ form.nome.help_text }}</small>{% endif %}
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Telefone</label>
+                                <label class="form-label">Telefone <small class="text-muted">(opcional)</small></label>
                                 {{ form.telefone }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">E-mail</label>
+                                <label class="form-label">E-mail <small class="text-muted">(opcional)</small></label>
                                 {{ form.email }}
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Especialidades</label>
+                            <label class="form-label">Serviços que este barbeiro faz</label>
                             {{ form.especialidades }}
-                            <small class="form-text text-muted">Segure Ctrl (ou Cmd no Mac) para selecionar múltiplos</small>
+                            {% if form.especialidades.help_text %}
+                            <small class="form-text text-muted d-block mt-1">{{ form.especialidades.help_text }}</small>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <div class="form-check form-switch">

@@ -60,6 +60,28 @@ class EmpresaForm(forms.ModelForm):
             self.fields['email'].required = True
 
 
+class EmpresaPerfilForm(forms.ModelForm):
+    """Form para o dono da barbearia editar seu próprio perfil."""
+    class Meta:
+        model = Empresa
+        fields = ['nome', 'telefone', 'email', 'endereco', 'descricao',
+                  'logo', 'foto_capa', 'whatsapp_numero',
+                  'mensagem_confirmacao', 'mensagem_lembrete']
+        widgets = {
+            'nome':                forms.TextInput(attrs={'class': 'form-control'}),
+            'telefone':            forms.TextInput(attrs={'class': 'form-control'}),
+            'email':               forms.EmailInput(attrs={'class': 'form-control'}),
+            'endereco':            forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'descricao':           forms.Textarea(attrs={'class': 'form-control', 'rows': 2,
+                                                         'placeholder': 'Ex: A melhor barbearia da região, especializada em cortes modernos...'}),
+            'whatsapp_numero':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': '31999999999'}),
+            'mensagem_confirmacao':forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'mensagem_lembrete':   forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'logo':                forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'foto_capa':           forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+
+
 class AssinaturaForm(forms.ModelForm):
     class Meta:
         model = Assinatura
@@ -75,12 +97,35 @@ class ServicoForm(forms.ModelForm):
         model = Servico
         fields = ['nome', 'preco', 'duracao', 'descricao', 'ativo']
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'preco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'duracao': forms.NumberInput(attrs={'class': 'form-control'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: Corte masculino, Barba, Combo…',
+            }),
+            'preco': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0,00',
+            }),
+            'duracao': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '5',
+                'step': '5',
+                'placeholder': '30',
+            }),
+            'descricao': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Opcional — aparece na página pública',
+            }),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['nome'].help_text = 'Nome curto que o cliente entende na hora de agendar.'
+        self.fields['preco'].help_text = 'Valor em reais (use ponto ou vírgula conforme o teclado).'
+        self.fields['duracao'].help_text = 'Tempo médio em minutos (ex.: 30, 45).'
 
 
 class ProfissionalForm(forms.ModelForm):
@@ -88,12 +133,29 @@ class ProfissionalForm(forms.ModelForm):
         model = Profissional
         fields = ['nome', 'telefone', 'email', 'especialidades', 'ativo']
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'telefone': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'especialidades': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nome do barbeiro',
+            }),
+            'telefone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Opcional — WhatsApp',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Opcional',
+            }),
+            'especialidades': forms.CheckboxSelectMultiple(attrs={'class': 'esp-checkboxes'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['nome'].help_text = 'Como o nome aparece para o cliente na página pública.'
+        self.fields['especialidades'].help_text = (
+            'Marque os serviços que este barbeiro faz. Se ainda não cadastrou serviços, faça isso antes.'
+        )
+        self.fields['especialidades'].required = False
 
 
 class HorarioAtendimentoForm(forms.ModelForm):
@@ -123,6 +185,56 @@ class HorarioAtendimentoForm(forms.ModelForm):
             self.add_error('hora_fim', 'A hora final deve ser maior que a hora inicial.')
 
         return cleaned_data
+
+
+class HorarioBulkForm(forms.Form):
+    """Um único envio: mesmo horário de início/fim em vários dias da semana para um barbeiro."""
+
+    profissional = forms.ModelChoiceField(
+        queryset=Profissional.objects.none(),
+        label='Barbeiro',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
+    dias_semana = forms.MultipleChoiceField(
+        label='Dias da semana',
+        choices=HorarioAtendimento.DIA_SEMANA_CHOICES,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'horario-bulk-dias'}),
+    )
+    hora_inicio = forms.TimeField(
+        label='Abre às',
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+    )
+    hora_fim = forms.TimeField(
+        label='Fecha às',
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+    )
+    intervalo_minutos = forms.IntegerField(
+        label='Intervalo entre horários (minutos)',
+        min_value=5,
+        max_value=240,
+        initial=30,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 5, 'max': 240}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profissional'].help_text = (
+            'O mesmo turno será aplicado em todos os dias marcados abaixo.'
+        )
+        self.fields['dias_semana'].help_text = (
+            'Marque todos os dias em que este barbeiro atende neste horário (ex.: seg a sex).'
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        hi = cleaned.get('hora_inicio')
+        hf = cleaned.get('hora_fim')
+        if hi and hf and hf <= hi:
+            self.add_error('hora_fim', 'O horário de fechamento deve ser depois da abertura.')
+        dias = cleaned.get('dias_semana')
+        if not dias:
+            self.add_error('dias_semana', 'Marque pelo menos um dia da semana.')
+        return cleaned
 
 
 class AgendamentoForm(forms.ModelForm):
@@ -186,24 +298,24 @@ class AgendamentoForm(forms.ModelForm):
 
 
 class AgendamentoPublicoForm(forms.Form):
+    # Campos hidden — preenchidos pelo JS da página pública
     servico = forms.ModelChoiceField(
         queryset=Servico.objects.none(),
         label='Serviço',
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput()
     )
     profissional = forms.ModelChoiceField(
         queryset=Profissional.objects.none(),
         label='Profissional',
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput()
     )
     data = forms.DateField(
         label='Data',
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+        widget=forms.HiddenInput()
     )
-    hora = forms.ChoiceField(
+    hora = forms.CharField(
         label='Horário',
-        choices=[],
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput()
     )
     cliente_nome = forms.CharField(
         label='Seu Nome',
@@ -225,66 +337,13 @@ class AgendamentoPublicoForm(forms.Form):
         required=False,
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Alguma observação adicional?'})
     )
-    
+
     def __init__(self, empresa=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.empresa = empresa
-        self.fields['hora'].choices = [('', 'Selecione o barbeiro e a data')]
-        self.fields['data'].widget.attrs['min'] = timezone.localdate().isoformat()
         if empresa:
             self.fields['servico'].queryset = Servico.objects.filter(empresa=empresa, ativo=True)
             self.fields['profissional'].queryset = Profissional.objects.filter(empresa=empresa, ativo=True)
-            self._preencher_horarios_disponiveis()
-
-    def _preencher_horarios_disponiveis(self):
-        profissional_id = self.data.get('profissional') if self.is_bound else None
-        data_str = self.data.get('data') if self.is_bound else None
-
-        if not profissional_id or not data_str:
-            return
-
-        try:
-            profissional = Profissional.objects.get(pk=profissional_id, empresa=self.empresa, ativo=True)
-            data_agendamento = datetime.strptime(data_str, '%Y-%m-%d').date()
-        except (Profissional.DoesNotExist, ValueError, TypeError):
-            return
-
-        horarios = HorarioAtendimento.objects.filter(
-            empresa=self.empresa,
-            profissional=profissional,
-            dia_semana=data_agendamento.weekday(),
-            ativo=True
-        ).order_by('hora_inicio')
-
-        ocupados = set(
-            Agendamento.objects.filter(
-                empresa=self.empresa,
-                profissional=profissional,
-                data=data_agendamento
-            ).values_list('hora', flat=True)
-        )
-
-        opcoes = []
-        hoje = timezone.localdate()
-        agora = timezone.localtime().time().replace(second=0, microsecond=0)
-        for horario in horarios:
-            inicio_dt = datetime.combine(data_agendamento, horario.hora_inicio)
-            fim_dt = datetime.combine(data_agendamento, horario.hora_fim)
-            passo = timedelta(minutes=horario.intervalo_minutos or 30)
-
-            while inicio_dt < fim_dt:
-                hora_slot = inicio_dt.time().replace(second=0, microsecond=0)
-                if data_agendamento == hoje and hora_slot <= agora:
-                    inicio_dt += passo
-                    continue
-
-                if hora_slot not in ocupados:
-                    valor = hora_slot.strftime('%H:%M')
-                    opcoes.append((valor, valor))
-                inicio_dt += passo
-
-        unicas = list(dict.fromkeys(opcoes))
-        self.fields['hora'].choices = unicas or [('', 'Sem horários disponíveis para este barbeiro nesta data')]
 
     def clean_hora(self):
         hora = self.cleaned_data.get('hora')

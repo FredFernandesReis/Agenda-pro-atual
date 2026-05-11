@@ -1,97 +1,196 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - Agenda PRO{% endblock %}
+{% block title %}Entrar — Agenda PRO{% endblock %}
 
 {% block extra_css %}
 <style>
-    .login-wrapper {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f4f7ff 0%, #eef9ff 100%);
-    }
-    .feature-card,
-    .login-card {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 12px 30px rgba(13, 110, 253, 0.08);
-    }
-    .price-badge {
-        font-size: 1.05rem;
-        font-weight: 700;
-        padding: 10px 14px;
-        border-radius: 12px;
-        background-color: #e8f3ff;
-        color: #0d6efd;
-        display: inline-block;
-    }
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    background: linear-gradient(160deg, #12121c 0%, #1a1a2e 45%, #252538 100%);
+}
+.login-brand {
+    flex: 1;
+    max-width: 520px;
+    padding: 2.5rem 2.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.login-brand::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 20% 40%, rgba(201,168,76,0.12), transparent 55%);
+    pointer-events: none;
+}
+.login-brand-inner { position: relative; z-index: 1; }
+.login-brand .logo-mark {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #c9a84c, #e8c76a);
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 8px 28px rgba(201,168,76,0.35);
+}
+.login-brand h1 {
+    font-size: clamp(1.65rem, 3.5vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    line-height: 1.15;
+}
+.login-brand h1 span { color: #c9a84c; }
+.login-brand .lead {
+    color: rgba(255,255,255,0.72);
+    font-size: 1rem;
+    line-height: 1.55;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+.login-brand ul { padding: 0; margin: 0 0 1.75rem; list-style: none; }
+.login-brand li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.88);
+}
+.login-brand li i { color: #c9a84c; margin-top: 0.15rem; flex-shrink: 0; }
+.price-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(201,168,76,0.14);
+    border: 1px solid rgba(201,168,76,0.45);
+    color: #f5e6c0;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+.login-brand .wa-link {
+    color: #c9a84c;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(201,168,76,0.5);
+}
+.login-brand .wa-link:hover { color: #e8c76a; border-bottom-color: #e8c76a; }
+
+.login-panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.25rem;
+    background: rgba(0,0,0,0.2);
+}
+.login-box {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    overflow: hidden;
+}
+.login-box-head {
+    padding: 1.75rem 1.75rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+.login-box-head h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+.login-box-head p {
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
+    color: #64748b;
+}
+.login-box-body { padding: 1.5rem 1.75rem 1.75rem; }
+.login-box-body .form-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #475569;
+}
+.login-box-body .btn-primary {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 991px) {
+    .login-page { flex-direction: column; }
+    .login-brand { max-width: none; padding: 2rem 1.5rem 1.5rem; }
+    .login-panel { padding: 1.5rem 1rem 2.5rem; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-wrapper d-flex align-items-center py-5">
-    <div class="container">
-        <div class="row g-4 align-items-center justify-content-center">
-            <div class="col-lg-6">
-                <div class="card feature-card p-4 p-md-5">
-                    <h1 class="h3 mb-3">
-                        <i class="bi bi-calendar-check text-primary"></i> Agenda PRO
-                    </h1>
-                    <p class="text-muted mb-4">
-                        Plataforma completa para controlar agendamentos, organizar horários e atender clientes com mais agilidade.
-                    </p>
-
-                    <div class="mb-4">
-                        <span class="price-badge">
-                            Plano Profissional: R$ 59,99 / mês
-                        </span>
-                    </div>
-
-                    <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Cadastro de serviços e profissionais</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Agenda organizada por data e horário</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Painel simples para acompanhar atendimentos</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Sistema ideal para negócios de serviços</li>
-                    </ul>
-
-                    <p class="mb-0">
-                        Quer assinar agora? Fale no WhatsApp:
-                        <a href="https://wa.me/5531982435468" target="_blank" rel="noopener noreferrer" class="fw-semibold">31 98243-5468</a>
-                    </p>
-                </div>
+<div class="login-page">
+    <div class="login-brand">
+        <div class="login-brand-inner">
+            <div class="logo-mark" aria-hidden="true"><i class="bi bi-calendar2-check"></i></div>
+            <h1>Agenda <span>PRO</span></h1>
+            <p class="lead">
+                Agendamento online para barbearias e salões: serviços, barbeiros, horários e página pública para seus clientes.
+            </p>
+            <div class="price-pill">
+                <i class="bi bi-tag-fill"></i> Plano a partir de R$ 59,99 / mês
             </div>
+            <ul>
+                <li><i class="bi bi-check2-circle"></i> Página pública com a sua marca</li>
+                <li><i class="bi bi-check2-circle"></i> Horários por barbeiro e confirmação por WhatsApp</li>
+                <li><i class="bi bi-check2-circle"></i> Painel simples para o dia a dia do salão</li>
+            </ul>
+            <p class="mb-0" style="font-size:0.9rem;color:rgba(255,255,255,0.75);">
+                Quer assinar? Chame no WhatsApp
+                <a href="https://wa.me/5531982435468" class="wa-link" target="_blank" rel="noopener">31 98243-5468</a>
+            </p>
+        </div>
+    </div>
 
-            <div class="col-md-8 col-lg-5">
-                <div class="card login-card">
-                    <div class="card-header text-center py-4 bg-white border-0">
-                        <h3 class="mb-0">
-                            <i class="bi bi-person-lock"></i> Acesse sua conta
-                        </h3>
-                        <p class="mb-0 mt-2 text-muted">Entre para gerenciar sua agenda e seus clientes.</p>
+    <div class="login-panel">
+        <div class="login-box">
+            <div class="login-box-head">
+                <h2>Acesso ao painel</h2>
+                <p>Entre com o usuário e a senha da sua barbearia.</p>
+            </div>
+            <div class="login-box-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Usuário</label>
+                        {{ form.username }}
                     </div>
-                    <div class="card-body p-4">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="{{ form.username.id_for_label }}" class="form-label">
-                                    <i class="bi bi-person"></i> Usuário
-                                </label>
-                                {{ form.username }}
-                            </div>
-                            <div class="mb-4">
-                                <label for="{{ form.password.id_for_label }}" class="form-label">
-                                    <i class="bi bi-lock"></i> Senha
-                                </label>
-                                {{ form.password }}
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-box-arrow-in-right"></i> Entrar no sistema
-                            </button>
-                        </form>
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
+                        {{ form.password }}
                     </div>
-                </div>
-            </div>            
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
-

@@ -2,10 +2,21 @@
 
 {% block title %}{% if servico %}Editar{% else %}Novo{% endif %} Serviço{% endblock %}
 
+{% block extra_css %}
+<style>
+.servico-dica { font-size: 0.88rem; line-height: 1.45; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            <div class="alert alert-info servico-dica mb-3">
+                <strong><i class="bi bi-lightbulb"></i> Dica:</strong>
+                cadastre primeiro os serviços (nome, preço, tempo). Depois, nos barbeiros, marque em quais serviços cada um é especialista.
+                O tempo em minutos é o que o cliente vê na página pública ao agendar.
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">
@@ -16,21 +27,24 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label">Nome</label>
+                            <label class="form-label">Nome do serviço</label>
                             {{ form.nome }}
+                            {% if form.nome.help_text %}<small class="form-text text-muted">{{ form.nome.help_text }}</small>{% endif %}
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Preço (R$)</label>
                                 {{ form.preco }}
+                                {% if form.preco.help_text %}<small class="form-text text-muted">{{ form.preco.help_text }}</small>{% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Duração (minutos)</label>
                                 {{ form.duracao }}
+                                {% if form.duracao.help_text %}<small class="form-text text-muted">{{ form.duracao.help_text }}</small>{% endif %}
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Descrição</label>
+                            <label class="form-label">Descrição <small class="text-muted fw-normal">(opcional)</small></label>
                             {{ form.descricao }}
                         </div>
                         <div class="mb-3">

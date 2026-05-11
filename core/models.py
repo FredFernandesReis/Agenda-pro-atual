@@ -36,6 +36,12 @@ class Empresa(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
     
     # Configurações WhatsApp
+    # Identidade visual
+    logo = models.ImageField(upload_to='logos/', blank=True, null=True, help_text="Logo da barbearia (será exibida na página pública)")
+    foto_capa = models.ImageField(upload_to='capas/', blank=True, null=True, help_text="Foto de capa da barbearia (banner da página pública)")
+    descricao = models.TextField(blank=True, null=True, help_text="Descrição curta da barbearia para exibir na página pública")
+
+    # Configurações WhatsApp
     whatsapp_numero = models.CharField(max_length=20, blank=True, null=True, help_text="Número para envio de mensagens WhatsApp")
     mensagem_confirmacao = models.TextField(
         blank=True,

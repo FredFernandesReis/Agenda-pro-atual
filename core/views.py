@@ -8,8 +8,8 @@ from django.http import JsonResponse
 from datetime import datetime, timedelta
 from .models import User, Empresa, Assinatura, Servico, Profissional, HorarioAtendimento, Agendamento, Anuncio
 from .forms import (
-    LoginForm, EmpresaForm, AssinaturaForm, ServicoForm, ProfissionalForm,
-    HorarioAtendimentoForm, AgendamentoForm, AgendamentoPublicoForm
+    LoginForm, EmpresaForm, EmpresaPerfilForm, AssinaturaForm, ServicoForm, ProfissionalForm,
+    HorarioAtendimentoForm, HorarioBulkForm, AgendamentoForm, AgendamentoPublicoForm,
 )
 from .whatsapp_service import WhatsAppService
 from functools import wraps
@@ -403,6 +403,26 @@ def anuncio_delete(request, pk):
     return render(request, 'core/super_admin/anuncio_delete.html', {'anuncio': anuncio})
 
 
+# ========== CLIENTE - PERFIL DA BARBEARIA ==========
+
+@login_required
+@empresa_required
+def perfil_empresa(request):
+    """Permite ao cliente editar o perfil/identidade visual da barbearia."""
+    empresa = request.user.empresa
+
+    if request.method == 'POST':
+        form = EmpresaPerfilForm(request.POST, request.FILES, instance=empresa)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil da barbearia atualizado com sucesso!')
+            return redirect('perfil_empresa')
+    else:
+        form = EmpresaPerfilForm(instance=empresa)
+
+    return render(request, 'core/cliente/perfil_empresa.html', {'form': form, 'empresa': empresa})
+
+
 # ========== CLIENTE - GERENCIAMENTO DE SERVIÇOS ==========
 
 @login_required
@@ -585,6 +605,47 @@ def horario_create(request):
         form.fields['profissional'].queryset = Profissional.objects.filter(empresa=empresa, ativo=True)
     
     return render(request, 'core/cliente/horario_form.html', {'form': form})
+
+
+@login_required
+@empresa_required
+def horario_bulk_create(request):
+    """Cria o mesmo intervalo de horário em vários dias da semana de uma vez."""
+    empresa = request.user.empresa
+
+    if request.method == 'POST':
+        form = HorarioBulkForm(request.POST)
+        form.fields['profissional'].queryset = Profissional.objects.filter(empresa=empresa, ativo=True)
+        if form.is_valid():
+            profissional = form.cleaned_data['profissional']
+            dias = form.cleaned_data['dias_semana']
+            hi = form.cleaned_data['hora_inicio']
+            hf = form.cleaned_data['hora_fim']
+            intervalo = form.cleaned_data['intervalo_minutos']
+            criados = 0
+            for dia in dias:
+                HorarioAtendimento.objects.create(
+                    empresa=empresa,
+                    profissional=profissional,
+                    dia_semana=int(dia),
+                    hora_inicio=hi,
+                    hora_fim=hf,
+                    intervalo_minutos=intervalo,
+                    ativo=True,
+                )
+                criados += 1
+            messages.success(
+                request,
+                f'{criados} horário(s) cadastrado(s) com sucesso para {profissional.nome}.',
+            )
+            return redirect('horarios_list')
+    else:
+        form = HorarioBulkForm(
+            initial={'profissional': request.GET.get('profissional') or None}
+        )
+        form.fields['profissional'].queryset = Profissional.objects.filter(empresa=empresa, ativo=True)
+
+    return render(request, 'core/cliente/horario_bulk_form.html', {'form': form})
 
 
 @login_required
@@ -821,6 +882,24 @@ def agendamento_publico(request, empresa_slug=None):
     })
 
 
+def api_dias_disponiveis(request, empresa_slug):
+    """Retorna os dias da semana (0-6) que um barbeiro tem horário cadastrado."""
+    empresa = get_object_or_404(Empresa, slug=empresa_slug, ativo=True)
+    profissional_id = request.GET.get('profissional')
+    if not profissional_id:
+        return JsonResponse({'dias': []})
+    try:
+        profissional = Profissional.objects.get(pk=profissional_id, empresa=empresa, ativo=True)
+    except Profissional.DoesNotExist:
+        return JsonResponse({'dias': []})
+    dias_qs = HorarioAtendimento.objects.filter(
+        empresa=empresa, profissional=profissional, ativo=True
+    ).values_list('dia_semana', flat=True).distinct()
+    # Garante inteiros 0–6 (Seg–Dom, igual a date.weekday() no Django)
+    dias = sorted({int(d) for d in dias_qs})
+    return JsonResponse({'dias': dias})
+
+
 def api_horarios_publicos(request, empresa_slug):
     """Retorna horários disponíveis por barbeiro e data (JSON)."""
     empresa = get_object_or_404(Empresa, slug=empresa_slug, ativo=True)
@@ -872,6 +951,42 @@ def agendamento_publico_sucesso(request, empresa_slug):
     """Página de sucesso do agendamento público"""
     empresa = get_object_or_404(Empresa, slug=empresa_slug)
     return render(request, 'core/publico/agendamento_sucesso.html', {'empresa': empresa})
+
+
+# ========== API ALERTA DE AGENDAMENTOS (CLIENTE / BARBEARIA) ==========
+
+@login_required
+def api_agendamentos_alerta(request):
+    """Conta pendentes e quantos agendamentos novos desde `since` (ISO)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'pendente_total': 0, 'novos': 0, 'server_time': timezone.now().isoformat()})
+
+    if request.user.is_super_admin():
+        return JsonResponse({'pendente_total': 0, 'novos': 0, 'server_time': timezone.now().isoformat()})
+
+    try:
+        empresa = request.user.empresa
+    except (Empresa.DoesNotExist, AttributeError):
+        return JsonResponse({'pendente_total': 0, 'novos': 0, 'server_time': timezone.now().isoformat()})
+
+    pendente_total = Agendamento.objects.filter(empresa=empresa, status='pendente').count()
+
+    novos = 0
+    since = request.GET.get('since', '').strip()
+    if since:
+        from django.utils.dateparse import parse_datetime
+
+        dt = parse_datetime(since.replace('Z', '+00:00'))
+        if dt is not None:
+            if timezone.is_naive(dt):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
+            novos = Agendamento.objects.filter(empresa=empresa, criado_em__gt=dt).count()
+
+    return JsonResponse({
+        'pendente_total': pendente_total,
+        'novos': novos,
+        'server_time': timezone.now().isoformat(),
+    })
 
 
 # ========== API PARA ANÚNCIOS ==========
