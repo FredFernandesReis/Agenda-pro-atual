@@ -23,23 +23,32 @@ body { background: #f5f5f5; }
     gap: 1.15rem;
     flex-wrap: wrap;
 }
-.pub-header-logo {
-    width: 88px; height: 88px;
+/* Círculo fixo: qualquer proporção de imagem fica redonda e centralizada */
+.pub-logo-ring {
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
     border: 3px solid var(--accent-color);
     box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     background: #fff;
     flex-shrink: 0;
 }
+.pub-header-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+}
 .pub-header-logo-ph {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    border: 3px solid var(--accent-color);
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
     background: rgba(201,168,76,0.12);
     display: flex; align-items: center; justify-content: center;
     font-size: 2.2rem; color: var(--accent-color);
-    flex-shrink: 0;
 }
 .pub-header-text h1 {
     font-size: clamp(1.35rem, 4vw, 1.75rem);
@@ -63,11 +72,17 @@ body { background: #f5f5f5; }
     gap: 1.5rem;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 1.75rem 1.25rem 3rem;
+    padding: 1.75rem 1.25rem calc(3rem + 52px);
 }
 @media (max-width: 900px) {
     .pub-grid { grid-template-columns: 1fr; }
     .pub-sidebar { order: -1; }
+}
+@media (max-width: 480px) {
+    .pub-header { padding: 1rem 0.85rem; }
+    .pub-header-inner { gap: 0.85rem; }
+    .pub-grid { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .pub-card-body { padding: 1rem; }
 }
 
 /* ── Card base ── */
@@ -303,7 +318,7 @@ body { background: #f5f5f5; }
 /* ── Responsivo mobile ── */
 @media (max-width: 600px) {
     .pub-header { padding: 1rem; }
-    .pub-header-logo, .pub-header-logo-ph { width: 72px; height: 72px; }
+    .pub-logo-ring { width: 72px; height: 72px; }
     .pub-grid { padding: 1rem 0.75rem 2rem; }
     .barbeiro-cards { gap: 0.5rem; }
     .barbeiro-card { max-width: calc(50% - 0.5rem); }
@@ -317,9 +332,13 @@ body { background: #f5f5f5; }
 <div class="pub-header">
     <div class="pub-header-inner">
         {% if empresa.logo %}
-            <img src="{{ empresa.logo.url }}" alt="Logo {{ empresa.nome }}" class="pub-header-logo">
+            <div class="pub-logo-ring" aria-hidden="true">
+                <img src="{{ empresa.logo.url }}" alt="Logo {{ empresa.nome }}" class="pub-header-logo" width="88" height="88" loading="lazy">
+            </div>
         {% else %}
-            <div class="pub-header-logo-ph" aria-hidden="true"><i class="bi bi-scissors"></i></div>
+            <div class="pub-logo-ring" aria-hidden="true">
+                <div class="pub-header-logo-ph"><i class="bi bi-scissors"></i></div>
+            </div>
         {% endif %}
         <div class="pub-header-text">
             <h1>{{ empresa.nome }}</h1>

@@ -860,6 +860,7 @@ def agendamento_publico(request, empresa_slug=None):
             WhatsAppService.enviar_confirmacao(agendamento)
             
             messages.success(request, 'Agendamento realizado com sucesso! Você receberá uma confirmação em breve.')
+            request.session['ultimo_ag_publico_id'] = agendamento.pk
             return redirect('agendamento_publico_sucesso', empresa_slug=empresa_slug)
     else:
         form = AgendamentoPublicoForm(empresa=empresa)
@@ -949,8 +950,56 @@ def empresa_detalhes(request, empresa_slug):
 
 def agendamento_publico_sucesso(request, empresa_slug):
     """Página de sucesso do agendamento público"""
+    from urllib.parse import quote
+
     empresa = get_object_or_404(Empresa, slug=empresa_slug)
-    return render(request, 'core/publico/agendamento_sucesso.html', {'empresa': empresa})
+
+    agendamento = None
+    aid = request.session.pop('ultimo_ag_publico_id', None)
+    if aid is not None:
+        try:
+            agendamento = Agendamento.objects.select_related('servico', 'profissional').get(
+                pk=int(aid), empresa=empresa
+            )
+        except (Agendamento.DoesNotExist, ValueError, TypeError):
+            agendamento = None
+
+    def _digitos_tel(val):
+        if not val:
+            return ''
+        return ''.join(c for c in str(val) if c.isdigit())
+
+    raw = (empresa.whatsapp_numero or empresa.telefone or '').strip()
+    digitos = _digitos_tel(raw)
+    if digitos.startswith('55'):
+        wa_tel_barbearia = digitos
+    elif digitos:
+        wa_tel_barbearia = '55' + digitos.lstrip('0')
+    else:
+        wa_tel_barbearia = ''
+
+    if agendamento and wa_tel_barbearia:
+        msg = (
+            f"Olá! Acabei de agendar pelo site ({empresa.nome}). "
+            f"Lembrar do meu horário: {agendamento.data.strftime('%d/%m/%Y')} às {agendamento.hora.strftime('%H:%M')} "
+            f"com {agendamento.profissional.nome} — {agendamento.servico.nome}. "
+            f"Cliente: {agendamento.cliente_nome}."
+        )
+        wa_lembrar_url = f'https://wa.me/{wa_tel_barbearia}?text={quote(msg)}'
+    elif wa_tel_barbearia:
+        msg = f"Olá! Acabei de fazer um agendamento pelo site da {empresa.nome}. Pode confirmar?"
+        wa_lembrar_url = f'https://wa.me/{wa_tel_barbearia}?text={quote(msg)}'
+    else:
+        wa_lembrar_url = ''
+
+    suporte_url = 'https://wa.me/5531982435468?text=' + quote('Olá! Preciso de suporte com o Agenda PRO.')
+
+    return render(request, 'core/publico/agendamento_sucesso.html', {
+        'empresa': empresa,
+        'agendamento': agendamento,
+        'wa_lembrar_url': wa_lembrar_url,
+        'suporte_url': suporte_url,
+    })
 
 
 # ========== API ALERTA DE AGENDAMENTOS (CLIENTE / BARBEARIA) ==========
