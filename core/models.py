@@ -30,7 +30,7 @@ class Empresa(models.Model):
     slug = models.SlugField(max_length=200, unique=True, blank=True, null=True)
     cnpj = models.CharField(max_length=18, blank=True, null=True)
     telefone = models.CharField(max_length=20)
-    email = models.EmailField()
+    email = models.EmailField(blank=True, null=True, help_text="Opcional")
     endereco = models.TextField(blank=True, null=True)
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -38,7 +38,10 @@ class Empresa(models.Model):
     # Configurações WhatsApp
     # Identidade visual
     logo = models.ImageField(upload_to='logos/', blank=True, null=True, help_text="Logo da barbearia (será exibida na página pública)")
-    foto_capa = models.ImageField(upload_to='capas/', blank=True, null=True, help_text="Foto de capa da barbearia (banner da página pública)")
+    foto_capa = models.ImageField(
+        upload_to='capas/', blank=True, null=True,
+        help_text="Legado: não é mais usado na página pública (apenas logo)."
+    )
     descricao = models.TextField(blank=True, null=True, help_text="Descrição curta da barbearia para exibir na página pública")
 
     # Configurações WhatsApp

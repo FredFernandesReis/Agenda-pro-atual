@@ -43,6 +43,9 @@
                         <i class="bi bi-box-arrow-right"></i> Sair
                     </button>
                 </form>
+                <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." class="fab-suporte fab-suporte--nav ms-2" target="_blank" rel="noopener noreferrer" title="Suporte Agenda PRO">
+                    <i class="bi bi-headset"></i> Suporte <small>31 98243-5468</small>
+                </a>
             </div>
         </div>
     </nav>
@@ -184,9 +187,11 @@
     
     {% block extra_js %}{% endblock %}
 
-    <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." class="fab-suporte" target="_blank" rel="noopener noreferrer" title="Suporte Agenda PRO">
+    {% if not user.is_authenticated %}
+    <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." class="fab-suporte fab-suporte--guest" target="_blank" rel="noopener noreferrer" title="Suporte Agenda PRO">
         <i class="bi bi-headset"></i> Suporte <small>31 98243-5468</small>
     </a>
+    {% endif %}
 </body>
 </html>
 

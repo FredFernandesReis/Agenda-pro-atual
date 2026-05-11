@@ -27,6 +27,16 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE-THIS-IN-PRODUCTION')
 # Static files
 STATIC_ROOT = '/var/www/agenda_pro/staticfiles'
 MEDIA_ROOT = '/var/www/agenda_pro/media'
+# MEDIA_URL vem de settings.py ('/media/') — mantenha igual ao location /media/ do Nginx
+
+# Arquivos enviados (logo) legíveis pelo Nginx/Gunicorn
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Hosts (defina no ambiente: export ALLOWED_HOSTS="agendapro.sbs,www.agendapro.sbs")
+_allowed = os.environ.get('ALLOWED_HOSTS', '').strip()
+if _allowed:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()]
 
 # Segurança adicional
 SECURE_SSL_REDIRECT = True

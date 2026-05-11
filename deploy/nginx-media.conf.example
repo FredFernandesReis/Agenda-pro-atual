@@ -1,0 +1,14 @@
+# Trecho para colar no server {} do seu site (Nginx).
+# Sem isto, com DEBUG=False o Django não expõe /media/ a menos que use o fallback em urls.py.
+# Ajuste o caminho se MEDIA_ROOT for outro (deve bater com settings_production.MEDIA_ROOT).
+
+location /media/ {
+    alias /var/www/agenda_pro/media/;
+    expires 7d;
+    add_header Cache-Control "public";
+}
+
+# Permissões no servidor (uma vez):
+#   sudo mkdir -p /var/www/agenda_pro/media
+#   sudo chown -R www-data:www-data /var/www/agenda_pro/media
+#   sudo chmod -R u+rwX,g+rX /var/www/agenda_pro/media

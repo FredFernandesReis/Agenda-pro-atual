@@ -51,12 +51,8 @@
     color: #1a1a2e !important;
 }
 
-/* Botão fixo Suporte (WhatsApp sistema) — todas as telas */
+/* Suporte WhatsApp — estilo base (navbar ou canto superior em páginas sem login) */
 .fab-suporte {
-    position: fixed;
-    right: max(10px, env(safe-area-inset-right, 10px));
-    bottom: max(10px, env(safe-area-inset-bottom, 10px));
-    z-index: 1060;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -70,7 +66,6 @@
     background: #c9a84c;
     border: 2px solid #b8973d;
     border-radius: 999px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
     white-space: nowrap;
 }
 .fab-suporte:hover {
@@ -81,12 +76,38 @@
     font-weight: 700;
     opacity: 0.95;
 }
-/* Na tela de sucesso a barra “lembrar” cobre o rodapé — sobe o suporte um pouco */
-body.pag-sucesso-ag .fab-suporte {
-    bottom: max(88px, calc(5.5rem + env(safe-area-inset-bottom, 0px)));
+/* Visitante / login: fixo no canto superior direito (fora da navbar) */
+a.fab-suporte.fab-suporte--guest {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(10px, env(safe-area-inset-right, 10px));
+    bottom: auto;
+    left: auto;
+    z-index: 1050;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
+}
+/* Logado: último item da navbar, à direita, sem cobrir Sino / Sair */
+.navbar .fab-suporte--nav {
+    position: static;
+    flex-shrink: 0;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+    max-width: min(100%, 11rem);
+}
+@media (max-width: 576px) {
+    .navbar .fab-suporte--nav small {
+        display: none;
+    }
+    .navbar .fab-suporte--nav {
+        padding: 0.32rem 0.55rem;
+        font-size: 0.68rem;
+        max-width: none;
+    }
 }
 @media (max-width: 400px) {
-    .fab-suporte { font-size: 0.68rem; padding: 0.38rem 0.62rem; }
+    a.fab-suporte.fab-suporte--guest {
+        font-size: 0.68rem;
+        padding: 0.36rem 0.62rem;
+    }
 }
 
 /* Estilos específicos adicionais */

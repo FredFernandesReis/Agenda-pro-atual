@@ -1,22 +1,41 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserChangeForm
 from .models import User, Empresa, Assinatura, Servico, Profissional, HorarioAtendimento, Agendamento, Anuncio
+
+
+class UserAdminChangeForm(UserChangeForm):
+    """E-mail opcional ao editar usuário no admin."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'email' in self.fields:
+            self.fields['email'].required = False
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    form = UserAdminChangeForm
     list_display = ['username', 'email', 'tipo', 'is_active', 'date_joined']
     list_filter = ['tipo', 'is_active', 'is_staff']
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Informações Adicionais', {'fields': ('tipo', 'telefone')}),
     )
+    # Adicionar usuário: formulário padrão só usuário + senhas (sem e-mail obrigatório)
 
 
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
+    exclude = ('foto_capa',)
     list_display = ['nome', 'usuario', 'telefone', 'email', 'ativo', 'criado_em']
     list_filter = ['ativo', 'criado_em']
     search_fields = ['nome', 'cnpj', 'email']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'email' in form.base_fields:
+            form.base_fields['email'].required = False
+        return form
 
 
 @admin.register(Assinatura)

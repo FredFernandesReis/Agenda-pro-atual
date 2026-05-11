@@ -55,9 +55,9 @@ class EmpresaForm(forms.ModelForm):
             self.fields['username'].required = False
             self.fields['email'].required = False
         else:
-            # Se está criando, username e email são obrigatórios
+            # Criação: usuário obrigatório; e-mail opcional (admin / fluxo interno)
             self.fields['username'].required = True
-            self.fields['email'].required = True
+            self.fields['email'].required = False
 
 
 class EmpresaPerfilForm(forms.ModelForm):
@@ -65,7 +65,7 @@ class EmpresaPerfilForm(forms.ModelForm):
     class Meta:
         model = Empresa
         fields = ['nome', 'telefone', 'email', 'endereco', 'descricao',
-                  'logo', 'foto_capa', 'whatsapp_numero',
+                  'logo', 'whatsapp_numero',
                   'mensagem_confirmacao', 'mensagem_lembrete']
         widgets = {
             'nome':                forms.TextInput(attrs={'class': 'form-control'}),
@@ -78,7 +78,6 @@ class EmpresaPerfilForm(forms.ModelForm):
             'mensagem_confirmacao':forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'mensagem_lembrete':   forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'logo':                forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
-            'foto_capa':           forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
 

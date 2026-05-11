@@ -182,7 +182,7 @@ def empresa_create(request):
         if form.is_valid():
             # Criar usuário
             username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
+            email = (form.cleaned_data.get('email') or '').strip()
             password = form.cleaned_data.get('password') or User.objects.make_random_password()
             
             user = User.objects.create_user(
