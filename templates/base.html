@@ -27,9 +27,12 @@
             <a class="navbar-brand" href="{% url 'dashboard' %}">
                 <i class="bi bi-calendar-check"></i> Agenda PRO
             </a>
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center flex-wrap justify-content-end gap-1">
+                <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." class="btn btn-sm btn-outline-warning nav-suporte-icon" target="_blank" rel="noopener noreferrer" title="Suporte WhatsApp 31 98243-5468">
+                    <i class="bi bi-headset"></i><span class="d-none d-md-inline ms-1">Suporte</span>
+                </a>
                 {% if user.tipo != 'super_admin' %}
-                <a href="{% url 'agendamentos_list' %}?status=pendente" class="btn btn-link text-white position-relative p-2 me-1" id="nav-alerta-ag" title="Agendamentos pendentes" style="text-decoration:none;">
+                <a href="{% url 'agendamentos_list' %}?status=pendente" class="btn btn-link text-white position-relative p-2" id="nav-alerta-ag" title="Agendamentos pendentes" style="text-decoration:none;">
                     <i class="bi bi-bell fs-5"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" id="nav-alerta-badge" style="font-size:0.65rem; display:none;">0</span>
                 </a>
@@ -188,9 +191,11 @@
     {% block extra_js %}{% endblock %}
 
     {% if not user.is_authenticated %}
-    <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." class="fab-suporte fab-suporte--guest" target="_blank" rel="noopener noreferrer" title="Suporte Agenda PRO">
-        <i class="bi bi-headset"></i> Suporte <small>31 98243-5468</small>
-    </a>
+    <p class="suporte-topo-bar mb-0 text-end">
+        <a href="https://wa.me/5531982435468?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20Agenda%20PRO." target="_blank" rel="noopener noreferrer" title="Suporte Agenda PRO">
+            <i class="bi bi-headset"></i> Suporte
+        </a>
+    </p>
     {% endif %}
 </body>
 </html>

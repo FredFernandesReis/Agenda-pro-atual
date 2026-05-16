@@ -2,55 +2,76 @@
 
 {% block title %}Agendamentos{% endblock %}
 
+{% block extra_css %}
+<style>
+.ag-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    background: #fff;
+}
+.ag-card:hover {
+    border-color: #c9a84c;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.ag-card .ag-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.ag-card h6 { margin: 0 0 0.25rem; font-weight: 700; }
+.ag-card .meta { font-size: 0.85rem; color: #64748b; }
+.msg-preview {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.88rem;
+    white-space: pre-wrap;
+    border: 1px solid #e2e8f0;
+}
+.btn-wa { background: #25d366; border-color: #25d366; color: #fff; }
+.btn-wa:hover { background: #1da851; border-color: #1da851; color: #fff; }
+@media (min-width: 992px) { .ag-list-mobile { display: none; } }
+@media (max-width: 991.98px) { .ag-table-desktop { display: none; } }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-2 sidebar p-0">
             <nav class="nav flex-column p-3">
-                <a class="nav-link" href="{% url 'cliente_dashboard' %}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a class="nav-link" href="{% url 'perfil_empresa' %}">
-                    <i class="bi bi-shop"></i> Perfil
-                </a>
-                <a class="nav-link" href="{% url 'servicos_list' %}">
-                    <i class="bi bi-scissors"></i> Serviços
-                </a>
-                <a class="nav-link" href="{% url 'profissionais_list' %}">
-                    <i class="bi bi-people"></i> Profissionais
-                </a>
-                <a class="nav-link" href="{% url 'horarios_list' %}">
-                    <i class="bi bi-clock"></i> Horários
-                </a>
-                <a class="nav-link active" href="{% url 'agendamentos_list' %}">
-                    <i class="bi bi-calendar-event"></i> Agendamentos
-                </a>
+                <a class="nav-link" href="{% url 'cliente_dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a class="nav-link" href="{% url 'perfil_empresa' %}"><i class="bi bi-shop"></i> Perfil</a>
+                <a class="nav-link" href="{% url 'servicos_list' %}"><i class="bi bi-scissors"></i> Serviços</a>
+                <a class="nav-link" href="{% url 'profissionais_list' %}"><i class="bi bi-people"></i> Profissionais</a>
+                <a class="nav-link" href="{% url 'horarios_list' %}"><i class="bi bi-clock"></i> Horários</a>
+                <a class="nav-link active" href="{% url 'agendamentos_list' %}"><i class="bi bi-calendar-event"></i> Agendamentos</a>
             </nav>
         </div>
         <div class="col-md-10 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-calendar-event"></i> Agendamentos</h2>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h2 class="mb-0"><i class="bi bi-calendar-event"></i> Agendamentos</h2>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary" id="btn-atualizar-agendamentos">
-                        <i class="bi bi-arrow-clockwise"></i> Atualizar agora
+                        <i class="bi bi-arrow-clockwise"></i> Atualizar
                     </button>
                     <a href="{% url 'agendamento_create' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Novo Agendamento
+                        <i class="bi bi-plus-circle"></i> Novo
                     </a>
                 </div>
             </div>
 
-            <div class="alert alert-info d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-broadcast"></i> Atualização automática ativada a cada 1 minuto.</span>
-                <small id="contador-atualizacao">Próxima atualização em 60s</small>
-            </div>
-            
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <form method="get" class="mb-3">
-                        <div class="row">
+                        <div class="row g-2">
                             <div class="col-md-4">
-                                <select name="status" class="form-control">
+                                <select name="status" class="form-select">
                                     <option value="">Todos os status</option>
                                     <option value="pendente" {% if status == 'pendente' %}selected{% endif %}>Pendente</option>
                                     <option value="confirmado" {% if status == 'confirmado' %}selected{% endif %}>Confirmado</option>
@@ -62,106 +83,97 @@
                                 <input type="date" name="data" class="form-control" value="{{ data }}">
                             </div>
                             <div class="col-md-3">
-                                <select name="profissional" class="form-control">
+                                <select name="profissional" class="form-select">
                                     <option value="">Todos os profissionais</option>
                                     {% for prof in profissionais %}
-                                    <option value="{{ prof.pk }}" {% if profissional_id == prof.pk|stringformat:"s" %}selected{% endif %}>
-                                        {{ prof.nome }}
-                                    </option>
+                                    <option value="{{ prof.pk }}" {% if profissional_id == prof.pk|stringformat:"s" %}selected{% endif %}>{{ prof.nome }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-search"></i> Filtrar
-                                </button>
+                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Filtrar</button>
                             </div>
                         </div>
                     </form>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Serviço</th>
-                                    <th>Profissional</th>
-                                    <th>Data/Hora</th>
-                                    <th>Telefone</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
+                    <div class="table-responsive ag-table-desktop">
+                        <table class="table table-hover align-middle">
+                            <thead><tr><th>Cliente</th><th>Serviço</th><th>Profissional</th><th>Data/Hora</th><th>Status</th><th></th></tr></thead>
                             <tbody>
                                 {% for agendamento in agendamentos %}
                                 <tr>
-                                    <td>{{ agendamento.cliente_nome }}</td>
+                                    <td><strong>{{ agendamento.cliente_nome }}</strong><br><small class="text-muted">{{ agendamento.cliente_telefone }}</small></td>
                                     <td>{{ agendamento.servico.nome }}</td>
                                     <td>{{ agendamento.profissional.nome }}</td>
                                     <td>{{ agendamento.data|date:"d/m/Y" }} {{ agendamento.hora|time:"H:i" }}</td>
-                                    <td>{{ agendamento.cliente_telefone }}</td>
-                                    <td>
-                                        {% if agendamento.status == 'confirmado' %}
-                                            <span class="badge bg-success">Confirmado</span>
-                                        {% elif agendamento.status == 'pendente' %}
-                                            <span class="badge bg-warning">Pendente</span>
-                                        {% elif agendamento.status == 'cancelado' %}
-                                            <span class="badge bg-danger">Cancelado</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Concluído</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'agendamento_edit' agendamento.pk %}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="{% url 'agendamento_delete' agendamento.pk %}" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </td>
+                                    <td>{% if agendamento.status == 'confirmado' %}<span class="badge bg-success">Confirmado</span>{% elif agendamento.status == 'pendente' %}<span class="badge bg-warning text-dark">Pendente</span>{% elif agendamento.status == 'cancelado' %}<span class="badge bg-danger">Cancelado</span>{% else %}<span class="badge bg-secondary">Concluído</span>{% endif %}</td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-primary btn-ver-ag" data-id="{{ agendamento.pk }}"><i class="bi bi-eye"></i> Abrir</button></td>
                                 </tr>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">Nenhum agendamento encontrado</td>
-                                </tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">Nenhum agendamento</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                    <div class="ag-list-mobile">
+                        {% for agendamento in agendamentos %}
+                        <div class="ag-card btn-ver-ag" data-id="{{ agendamento.pk }}" role="button" tabindex="0">
+                            <div class="ag-card-top">
+                                <div><h6>{{ agendamento.cliente_nome }}</h6><div class="meta">{{ agendamento.data|date:"d/m/Y" }} · {{ agendamento.hora|time:"H:i" }}</div></div>
+                                {% if agendamento.status == 'confirmado' %}<span class="badge bg-success">Confirmado</span>{% elif agendamento.status == 'pendente' %}<span class="badge bg-warning text-dark">Pendente</span>{% elif agendamento.status == 'cancelado' %}<span class="badge bg-danger">Cancelado</span>{% else %}<span class="badge bg-secondary">Concluído</span>{% endif %}
+                            </div>
+                            <div class="meta mt-1">{{ agendamento.servico.nome }} · {{ agendamento.profissional.nome }}</div>
+                        </div>
+                        {% empty %}<p class="text-center text-muted">Nenhum agendamento</p>{% endfor %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<div class="modal fade" id="modalAgendamento" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+<div class="modal-header"><h5 class="modal-title" id="modalAgendamentoLabel">Agendamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body" id="modalAgBody">Carregando…</div>
+<div class="modal-footer flex-wrap gap-2" id="modalAgFooter" style="display:none;">
+<a href="#" id="modalAgEdit" class="btn btn-outline-primary btn-sm">Editar</a>
+<a href="#" id="modalAgDelete" class="btn btn-outline-danger btn-sm">Excluir</a>
+<button type="button" class="btn btn-secondary btn-sm ms-auto" data-bs-dismiss="modal">Fechar</button>
+</div></div></div></div>
 {% endblock %}
-
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const botaoAtualizar = document.getElementById('btn-atualizar-agendamentos');
-    const contador = document.getElementById('contador-atualizacao');
-    let segundosRestantes = 60;
-
-    function atualizarPagina() {
-        window.location.reload();
-    }
-
-    if (botaoAtualizar) {
-        botaoAtualizar.addEventListener('click', atualizarPagina);
-    }
-
-    setInterval(function () {
-        segundosRestantes -= 1;
-        if (contador) {
-            contador.textContent = 'Próxima atualização em ' + segundosRestantes + 's';
-        }
-
-        if (segundosRestantes <= 0) {
-            atualizarPagina();
-        }
-    }, 1000);
+(function(){
+const API='/api/agendamentos/';
+const modalEl=document.getElementById('modalAgendamento');
+const modalBody=document.getElementById('modalAgBody');
+const modalFooter=document.getElementById('modalAgFooter');
+const modalEdit=document.getElementById('modalAgEdit');
+const modalDelete=document.getElementById('modalAgDelete');
+const bsModal=modalEl?new bootstrap.Modal(modalEl):null;
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function badge(st){if(st==='confirmado')return'bg-success';if(st==='pendente')return'bg-warning text-dark';if(st==='cancelado')return'bg-danger';return'bg-secondary';}
+function wa(url,lbl,ic){if(!url)return'<button class="btn btn-outline-secondary btn-sm" disabled><i class="bi '+ic+'"></i> '+lbl+'</button>';return'<a href="'+url+'" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="bi '+ic+'"></i> '+lbl+'</a>';}
+function render(d){
+document.getElementById('modalAgendamentoLabel').innerHTML='<i class="bi bi-calendar-check"></i> '+esc(d.cliente_nome);
+let h='<div class="row g-3 mb-3">';
+h+='<div class="col-md-6"><strong>Cliente</strong><br>'+esc(d.cliente_nome)+'</div>';
+h+='<div class="col-md-6"><strong>Telefone</strong><br>'+(esc(d.cliente_telefone)||'—')+'</div>';
+h+='<div class="col-md-6"><strong>Serviço</strong><br>'+esc(d.servico)+'</div>';
+h+='<div class="col-md-6"><strong>Profissional</strong><br>'+esc(d.profissional)+'</div>';
+h+='<div class="col-md-6"><strong>Data</strong><br>'+esc(d.data)+' '+esc(d.hora)+'</div>';
+h+='<div class="col-md-6"><strong>Status</strong><br><span class="badge '+badge(d.status)+'">'+esc(d.status_label)+'</span></div>';
+if(d.observacoes)h+='<div class="col-12"><strong>Obs</strong><br>'+esc(d.observacoes)+'</div>';
+h+='</div><h6 class="mb-2"><i class="bi bi-whatsapp text-success"></i> Mensagens</h6><div class="d-flex flex-wrap gap-2 mb-3">';
+h+=wa(d.whatsapp.pendente,'Pendente','bi-hourglass')+wa(d.whatsapp.confirmacao,'Confirmação','bi-check-circle')+wa(d.whatsapp.lembrete,'Lembrete','bi-bell');
+h+='</div><div class="msg-preview my-2">'+esc(d.mensagens.confirmacao)+'</div><button type="button" class="btn btn-outline-secondary btn-sm" id="btnCopiarMsg"><i class="bi bi-clipboard"></i> Copiar confirmação</button>';
+modalBody.innerHTML=h;modalFooter.style.display='flex';modalEdit.href=d.edit_url;modalDelete.href=d.delete_url;
+const b=document.getElementById('btnCopiarMsg');if(b)b.onclick=function(){navigator.clipboard.writeText(d.mensagens.confirmacao);};}
+async function abrir(id){if(!bsModal)return;modalBody.innerHTML='Carregando…';modalFooter.style.display='none';bsModal.show();
+try{const r=await fetch(API+id+'/');if(!r.ok)throw 0;render(await r.json());}catch(e){modalBody.innerHTML='<div class="alert alert-danger">Erro</div>';}}
+document.querySelectorAll('.btn-ver-ag').forEach(el=>{
+    el.addEventListener('click',e=>{e.preventDefault();abrir(el.getAttribute('data-id'));});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();abrir(el.getAttribute('data-id'));}});
 });
+document.getElementById('btn-atualizar-agendamentos')?.addEventListener('click',()=>location.reload());
+})();
 </script>
 {% endblock %}
-
-

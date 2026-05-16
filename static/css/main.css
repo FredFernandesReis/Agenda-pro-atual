@@ -51,63 +51,30 @@
     color: #1a1a2e !important;
 }
 
-/* Suporte WhatsApp — estilo base (navbar ou canto superior em páginas sem login) */
-.fab-suporte {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    padding: 0.42rem 0.78rem;
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-decoration: none !important;
-    color: #1a1a2e !important;
-    background: #c9a84c;
-    border: 2px solid #b8973d;
-    border-radius: 999px;
-    white-space: nowrap;
+/* Suporte: discreto na navbar (logado) ou faixa fina no topo (visitante) */
+.navbar .nav-suporte-icon {
+    border-color: #c9a84c !important;
+    color: #c9a84c !important;
+    font-weight: 600;
 }
-.fab-suporte:hover {
-    background: #e8c76a;
-    color: #1a1a2e !important;
+.navbar .nav-suporte-icon:hover {
+    background: rgba(201, 168, 76, 0.15) !important;
+    color: #e8c76a !important;
 }
-.fab-suporte small {
-    font-weight: 700;
-    opacity: 0.95;
+.suporte-topo-bar {
+    background: #1a1a2e;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.78rem;
+    position: relative;
+    z-index: 1040;
 }
-/* Visitante / login: fixo no canto superior direito (fora da navbar) */
-a.fab-suporte.fab-suporte--guest {
-    position: fixed;
-    top: max(10px, env(safe-area-inset-top, 0px));
-    right: max(10px, env(safe-area-inset-right, 10px));
-    bottom: auto;
-    left: auto;
-    z-index: 1050;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
+.suporte-topo-bar a {
+    color: #c9a84c;
+    text-decoration: none;
+    font-weight: 600;
 }
-/* Logado: último item da navbar, à direita, sem cobrir Sino / Sair */
-.navbar .fab-suporte--nav {
-    position: static;
-    flex-shrink: 0;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
-    max-width: min(100%, 11rem);
-}
-@media (max-width: 576px) {
-    .navbar .fab-suporte--nav small {
-        display: none;
-    }
-    .navbar .fab-suporte--nav {
-        padding: 0.32rem 0.55rem;
-        font-size: 0.68rem;
-        max-width: none;
-    }
-}
-@media (max-width: 400px) {
-    a.fab-suporte.fab-suporte--guest {
-        font-size: 0.68rem;
-        padding: 0.36rem 0.62rem;
-    }
+.suporte-topo-bar a:hover {
+    color: #e8c76a;
 }
 
 /* Estilos específicos adicionais */

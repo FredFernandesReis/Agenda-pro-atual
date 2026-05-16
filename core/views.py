@@ -709,7 +709,7 @@ def agendamentos_list(request):
     profissionais = Profissional.objects.filter(empresa=empresa, ativo=True)
     
     return render(request, 'core/cliente/agendamentos_list.html', {
-        'agendamentos': agendamentos,
+        'agendamentos': agendamentos.order_by('-data', '-hora'),
         'profissionais': profissionais,
         'status': status or '',
         'data': data or '',
@@ -1041,13 +1041,23 @@ def api_agendamentos_alerta(request):
 # ========== API PARA ANÚNCIOS ==========
 
 def api_anuncios(request):
-    """API para retornar anúncios ativos (JSON)"""
+    """Anúncios do super admin: só para clientes com assinatura ativa."""
     if not request.user.is_authenticated:
         return JsonResponse({'anuncios': []})
-    
+
+    if request.user.tipo == 'super_admin':
+        return JsonResponse({'anuncios': []})
+
+    if not hasattr(request.user, 'empresa'):
+        return JsonResponse({'anuncios': []})
+
+    from .mensagens import empresa_tem_assinatura_ativa
+    if not empresa_tem_assinatura_ativa(request.user.empresa):
+        return JsonResponse({'anuncios': []})
+
     anuncios_ativos = Anuncio.objects.filter(ativo=True)
     anuncios_data = []
-    
+
     for anuncio in anuncios_ativos:
         if anuncio.esta_ativo():
             anuncios_data.append({
@@ -1056,6 +1066,76 @@ def api_anuncios(request):
                 'mensagem': anuncio.mensagem,
                 'tipo': anuncio.tipo,
             })
-    
+
     return JsonResponse({'anuncios': anuncios_data})
+
+
+@login_required
+@empresa_required
+def api_agendamento_detalhe(request, pk):
+    """Detalhes do agendamento + mensagens prontas para WhatsApp (JSON)."""
+    from .mensagens import formatar_mensagem_agendamento, url_whatsapp
+
+    empresa = request.user.empresa
+    agendamento = get_object_or_404(
+        Agendamento.objects.select_related('servico', 'profissional'),
+        pk=pk,
+        empresa=empresa,
+    )
+
+    padrao_conf = (
+        'Olá {cliente}! Seu agendamento na {empresa} foi confirmado para {data} às {hora} '
+        'com {profissional} — serviço: {servico}. Até lá!'
+    )
+    padrao_lembrete = (
+        'Olá {cliente}! Lembrete: você tem horário em {data} às {hora} com {profissional} '
+        '({servico}) na {empresa}.'
+    )
+    padrao_pendente = (
+        'Olá {cliente}! Recebemos seu pedido de agendamento para {data} às {hora} '
+        'com {profissional} ({servico}) na {empresa}. Em breve confirmamos!'
+    )
+
+    msg_confirmacao = formatar_mensagem_agendamento(
+        empresa.mensagem_confirmacao, agendamento, padrao_conf
+    )
+    msg_lembrete = formatar_mensagem_agendamento(
+        empresa.mensagem_lembrete, agendamento, padrao_lembrete
+    )
+    msg_pendente = formatar_mensagem_agendamento('', agendamento, padrao_pendente)
+
+    tel = agendamento.cliente_telefone or ''
+
+    status_labels = {
+        'pendente': 'Pendente',
+        'confirmado': 'Confirmado',
+        'cancelado': 'Cancelado',
+        'concluido': 'Concluído',
+    }
+
+    return JsonResponse({
+        'id': agendamento.pk,
+        'cliente_nome': agendamento.cliente_nome,
+        'cliente_telefone': tel,
+        'cliente_email': agendamento.cliente_email or '',
+        'servico': agendamento.servico.nome,
+        'profissional': agendamento.profissional.nome,
+        'data': agendamento.data.strftime('%d/%m/%Y'),
+        'hora': agendamento.hora.strftime('%H:%M'),
+        'status': agendamento.status,
+        'status_label': status_labels.get(agendamento.status, agendamento.status),
+        'observacoes': agendamento.observacoes or '',
+        'edit_url': f'/agendamentos/{agendamento.pk}/editar/',
+        'delete_url': f'/agendamentos/{agendamento.pk}/excluir/',
+        'mensagens': {
+            'confirmacao': msg_confirmacao,
+            'lembrete': msg_lembrete,
+            'pendente': msg_pendente,
+        },
+        'whatsapp': {
+            'confirmacao': url_whatsapp(tel, msg_confirmacao),
+            'lembrete': url_whatsapp(tel, msg_lembrete),
+            'pendente': url_whatsapp(tel, msg_pendente),
+        },
+    })
 

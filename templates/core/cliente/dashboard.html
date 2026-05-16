@@ -36,34 +36,19 @@
                     <a href="{% url 'agendamento_publico_empresa' empresa.slug %}" target="_blank" class="btn btn-outline-primary me-2">
                         <i class="bi bi-eye"></i> Ver Página Pública
                     </a>
-                    <button type="button" class="btn btn-primary" onclick="copiarLink()">
-                        <i class="bi bi-link-45deg"></i> Copiar Link
-                    </button>
                 </div>
             </div>
             
-            <!-- Card com Link Público -->
-            <div class="card mb-4 bg-light">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-share"></i> Link da Sua Página de Agendamento
-                    </h5>
-                    <p class="text-muted mb-2">Compartilhe este link com seus clientes para que eles possam agendar online:</p>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="linkPublico" 
-                               value="{{ request.scheme }}://{{ request.get_host }}{% url 'agendamento_publico_empresa' empresa.slug %}" 
-                               readonly>
-                        <button class="btn btn-primary" type="button" onclick="copiarLink()">
-                            <i class="bi bi-clipboard"></i> Copiar
-                        </button>
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h5 class="card-title mb-1"><i class="bi bi-share"></i> Link para clientes agendarem</h5>
+                        <p class="text-muted mb-0 small">Copie e envie no WhatsApp, Instagram ou onde preferir.</p>
                     </div>
-                    <small class="text-muted mt-2 d-block">
-                        <i class="bi bi-info-circle"></i> 
-                        Você também pode acessar: 
-                        <a href="{% url 'empresa_detalhes' empresa.slug %}" target="_blank">
-                            Página de Detalhes da Empresa
-                        </a>
-                    </small>
+                    <button type="button" class="btn btn-primary" id="btnCopiarLinkPublico">
+                        <i class="bi bi-clipboard"></i> Copiar link
+                    </button>
+                    <input type="hidden" id="linkPublico" value="{{ request.scheme }}://{{ request.get_host }}{% url 'agendamento_publico_empresa' empresa.slug %}">
                 </div>
             </div>
             
@@ -213,28 +198,25 @@
 
 {% block extra_js %}
 <script>
-function copiarLink() {
+(function () {
+    const btn = document.getElementById('btnCopiarLinkPublico');
     const linkInput = document.getElementById('linkPublico');
-    linkInput.select();
-    linkInput.setSelectionRange(0, 99999); // Para mobile
-    
-    navigator.clipboard.writeText(linkInput.value).then(function() {
-        // Mostrar feedback visual
-        const btn = event.target.closest('button');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check"></i> Copiado!';
-        btn.classList.add('btn-success');
-        btn.classList.remove('btn-primary');
-        
-        setTimeout(function() {
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-primary');
-        }, 2000);
-    }).catch(function(err) {
-        alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+    if (!btn || !linkInput) return;
+    btn.addEventListener('click', function () {
+        const url = linkInput.value;
+        navigator.clipboard.writeText(url).then(function () {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> Copiado!';
+            btn.classList.replace('btn-primary', 'btn-success');
+            setTimeout(function () {
+                btn.innerHTML = original;
+                btn.classList.replace('btn-success', 'btn-primary');
+            }, 2000);
+        }).catch(function () {
+            alert('Não foi possível copiar. Tente novamente.');
+        });
     });
-}
+})();
 </script>
 {% endblock %}
 

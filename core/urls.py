@@ -53,6 +53,7 @@ urlpatterns = [
     path('agendamentos/criar/', views.agendamento_create, name='agendamento_create'),
     path('agendamentos/<int:pk>/editar/', views.agendamento_edit, name='agendamento_edit'),
     path('agendamentos/<int:pk>/excluir/', views.agendamento_delete, name='agendamento_delete'),
+    path('api/agendamentos/<int:pk>/', views.api_agendamento_detalhe, name='api_agendamento_detalhe'),
     
     # Cliente - Perfil da Barbearia
     path('perfil/', views.perfil_empresa, name='perfil_empresa'),
